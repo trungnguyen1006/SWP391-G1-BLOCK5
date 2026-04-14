@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hoi An Hotel - Welcome</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Poppins", sans-serif;
+        }
+
+        body {
+            color: #333;
+            background-color: #fff;
+        }
+
+        header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: #fff;
+            color: #000;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 80px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        header .logo {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: #f9c74f;
+        }
+
+        nav {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        nav a {
+            color: #333;
+            text-decoration: none;
+            margin: 0 10px;
+            font-weight: 500;
+        }
+
+        .btn-primary {
+            padding: 10px 25px;
+            border: 1px solid #f9c74f;
+            background: #f9c74f;
+            color: #000;
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        .auth {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .auth .btn {
+            padding: 8px 20px;
+            background: #f9c74f;
+            color: #000;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            text-decoration: none;
+        }
+
+        .main-content {
+            margin-top: 80px;
+            padding: 60px 100px;
+            text-align: center;
+        }
+
+        .welcome-section {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .welcome-section h1 {
+            font-size: 3rem;
+            color: #222;
+            margin-bottom: 20px;
+        }
+
+        .welcome-section p {
+            font-size: 1.2rem;
+            line-height: 1.8;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 40px;
+        }
+
+        .cta-buttons a {
+            padding: 15px 40px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+
+        .btn-explore {
+            background: #f9c74f;
+            color: #000;
+        }
+
+        .btn-explore:hover {
+            background: #d4a017;
+        }
+
+        .btn-contact {
+            background: transparent;
+            color: #f9c74f;
+            border: 2px solid #f9c74f;
+        }
+
+        .btn-contact:hover {
+            background: #f9c74f;
+            color: #000;
+        }
+
+        footer {
+            background: #222;
+            color: #fff;
+            padding: 40px;
+            text-align: center;
+        }
+
+        footer p {
+            margin-top: 10px;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            header {
+                padding: 10px 20px;
+            }
+
+            .main-content {
+                padding: 40px 20px;
+            }
+
+            .welcome-section h1 {
+                font-size: 2rem;
+            }
+
+            .cta-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div th:replace="~{fragments/header :: header}"></div>
+
+<main class="main-content">
+    <div class="welcome-section">
+        <h1>Welcome to Hoi An Hotel</h1>
+        <p>
+            Experience the perfect blend of traditional Vietnamese hospitality and modern comfort
+            in the heart of Hoi An Ancient Town. Our hotel offers a unique gateway to explore
+            the rich cultural heritage of this UNESCO World Heritage Site.
+        </p>
+        <p>
+            Whether you're here for leisure or business, we provide exceptional service,
+            elegant accommodations, and authentic local experiences that will make your stay memorable.
+        </p>
+
+        <div class="cta-buttons">
+            <a th:href="@{/users/homepage}" class="btn-explore">Explore Our Hotel</a>
+            <a href="#contact" class="btn-contact">Contact Us</a>
+        </div>
+    </div>
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+</body>
+</html>

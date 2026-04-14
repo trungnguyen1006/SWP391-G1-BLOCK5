@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title th:text="${pageTitle} ?: 'Hoi An Hotel'">Hoi An Hotel</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+</head>
+<body>
+<header id="navbar" th:fragment="header">
+    <div class="logo">Hoi An Hotel</div>
+    <nav>
+        <a th:href="@{/}">TRANG CHỦ</a>
+        <a href="/room-types">HẠNG PHÒNG</a>
+        <a href="/restaurants">ẨM THỰC</a>
+        <a href="/amenities">TIỆN NGHI</a>
+        <a href="/blogs">Blog</a>
+        <a class="nav-link" th:href="@{/booking/history}">
+                <i class="bi bi-clock-history"></i> Lịch Sử Đặt Phòng
+        </a>
+        <a href="/booking/search" class="btn-primary">ĐẶT PHÒNG</a>
+
+        <div class="auth">
+            <select sec:authorize="isAuthenticated()" class="btn user-menu" onchange="if(this.value) window.location.href=this.value;">
+                <option value="" selected>
+                    Xin chào, <span sec:authentication="name"></span>
+                </option>
+                <option th:value="@{/profile}">Hồ sơ</option>
+                <option value="/feedback">Góp ý</option>
+            </select>
+
+            <a sec:authorize="!isAuthenticated()" class="btn" th:href="@{/login}">Đăng nhập</a>
+            <a sec:authorize="!isAuthenticated()" class="btn" th:href="@{/register}">Đăng ký</a>
+            <form sec:authorize="isAuthenticated()" th:action="@{/logout}" method="post" style="display: inline;">
+                <button type="submit" class="btn">Đăng xuất</button>
+            </form>
+        </div>
+    </nav>
+</header>
+</body>
+</html>

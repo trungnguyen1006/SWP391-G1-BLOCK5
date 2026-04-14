@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+</head>
+<body>
+<footer id="contact" th:fragment="footer">
+    <h2>Contact Us</h2>
+    <p>Address: 12 Phan Chu Trinh, Hoi An, Quang Nam</p>
+    <p>Phone: (+84) 235 3 861 461</p>
+    <p>Email: info@hoianhotel.vn</p>
+    <p>&copy; <span th:text="${#temporals.format(#temporals.createNow(), 'yyyy')}">2025</span> Hoi An Hotel. All rights reserved.</p>
+</footer>
+</body>
+</html>
+
+
