@@ -1,7 +1,7 @@
 package com.hotelmanage.service;
 
 import com.hotelmanage.entity.room.RoomType;
-import com.hotelmanage.repository.RoomTypeRepository;
+import com.hotelmanage.repository.room.RoomTypeRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;

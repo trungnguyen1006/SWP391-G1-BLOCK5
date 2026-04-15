@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Đăng ký - Hoi An Hotel</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Poppins", sans-serif;
+        }
+
+        body {
+            background: #f5f5f5;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background: #fff;
+            color: #000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 80px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        header .logo {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: #f9c74f;
+        }
+
+        nav {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        nav a {
+            color: #333;
+            text-decoration: none;
+            margin: 0 10px;
+            font-weight: 500;
+        }
+
+        .btn-primary {
+            padding: 10px 25px;
+            background: #f9c74f;
+            color: #000;
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .auth {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .auth .btn {
+            padding: 8px 20px;
+            background: #f9c74f;
+            color: #000;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            text-decoration: none;
+        }
+
+        .auth-card {
+            max-width: 450px;
+            margin: 80px auto;
+            padding: 40px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .auth-card h1 {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            color: #222;
+            text-align: center;
+        }
+
+        .form label {
+            display: block;
+            margin-bottom: 15px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .form input {
+            width: 100%;
+            padding: 12px;
+            margin-top: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        .form input:focus {
+            outline: none;
+            border-color: #f9c74f;
+        }
+
+        .form .error {
+            color: #c33;
+            font-size: 0.85rem;
+            display: block;
+            margin-top: 5px;
+        }
+
+        .form button {
+            width: 100%;
+            padding: 12px;
+            background: #f9c74f;
+            color: #000;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .form button:hover {
+            background: #d4a017;
+        }
+
+        .form-note {
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+        }
+
+        .form-note a {
+            color: #f9c74f;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        footer {
+            background: #222;
+            color: #fff;
+            padding: 40px;
+            text-align: center;
+            margin-top: auto;
+        }
+
+        footer p {
+            margin-top: 10px;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+
+<div th:replace="~{fragments/header :: header}"></div>
+
+<section class="auth-card">
+    <h1>Đăng ký</h1>
+    <form th:action="@{/register}" method="post" th:object="${registerRequest}" class="form">
+        <label>Tên đăng nhập
+            <input type="text" th:field="*{username}" placeholder="Nhập tên đăng nhập" required />
+            <small class="error" th:errors="*{username}"></small>
+        </label>
+        <label>Email
+            <input type="email" th:field="*{email}" placeholder="you@example.com" required />
+            <small class="error" th:errors="*{email}"></small>
+        </label>
+        <label>Mật khẩu
+            <input type="password" th:field="*{password}" placeholder="Tối thiểu 6 ký tự" required />
+            <small class="error" th:errors="*{password}"></small>
+        </label>
+        <label>Số điện thoại (tùy chọn)
+            <input type="text"
+                   th:field="*{phone}"
+                   placeholder="Ví dụ: 0901234567"
+                   maxlength="10"
+                   pattern="0[0-9]{9}"
+                   title="Số điện thoại phải gồm 10 chữ số và bắt đầu bằng số 0" />
+        </label>
+        <label>Địa chỉ (tùy chọn)
+            <input type="text" th:field="*{address}" placeholder="Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành" />
+        </label>
+        <button type="submit" class="btn primary">Tạo tài khoản</button>
+    </form>
+    <p class="form-note">Đã có tài khoản? <a th:href="@{/login}">Đăng nhập</a></p>
+</section>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+</body>
+</html>
