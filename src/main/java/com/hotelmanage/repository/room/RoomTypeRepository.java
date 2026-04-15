@@ -1,4 +1,4 @@
-package com.hotelmanage.repository;
+package com.hotelmanage.repository.room;
 
 import com.hotelmanage.entity.room.RoomType;
 import org.springframework.data.domain.Page;
