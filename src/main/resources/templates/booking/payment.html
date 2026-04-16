@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Thanh Toán</title>
+</head>
+<body>
+<h2>Thanh toán đặt phòng</h2>
+<form th:action="@{/booking/payment/create}" method="post">
+    <input type="hidden" name="bookingId" th:value="${bookingId}">
+    <button type="submit">Thanh toán qua VNPay</button>
+</form>
+</body>
+</html>
