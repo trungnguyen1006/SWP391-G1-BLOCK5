@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đặt Phòng - Khách sạn Hội An</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #f9c74f;
+            --success-color: #27ae60;
+            --light-bg: #ecf0f1;
+        }
+
+        body {
+            background-color: #f9f9f9;
+            color: #333;
+            margin-top: 80px; /* Thay padding-top bằng margin-top */
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .booking-container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            flex: 1;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* Progress Steps */
+        .progress-steps {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .steps {
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+        }
+
+        .step {
+            flex: 1;
+            text-align: center;
+            position: relative;
+        }
+
+        .step-number {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #e0e0e0;
+            color: #999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 10px;
+            font-weight: 700;
+            font-size: 1.2rem;
+            transition: all 0.3s;
+        }
+
+        .step.active .step-number {
+            background: var(--accent-color);
+            color: #000;
+        }
+
+        .step.completed .step-number {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .step-title {
+            font-weight: 600;
+            color: #999;
+            transition: all 0.3s;
+        }
+
+        .step.active .step-title,
+        .step.completed .step-title {
+            color: var(--primary-color);
+        }
+
+        .step-line {
+            position: absolute;
+            top: 25px;
+            left: 50%;
+            width: 100%;
+            height: 3px;
+            background: #e0e0e0;
+            z-index: -1;
+        }
+
+        .step.completed .step-line {
+            background: var(--success-color);
+        }
+
+        .step:last-child .step-line {
+            display: none;
+        }
+
+        /* Cards */
+        .search-card, .booking-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        .card-title {
+            color: var(--primary-color);
+            font-weight: 700;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 8px;
+        }
+
+        .form-control, .form-select {
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 12px 15px;
+            transition: all 0.3s;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 0.2rem rgba(249, 199, 79, 0.25);
+        }
+
+        /* Room Card */
+        .room-type-card {
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+            background: white;
+            display: flex;
+            gap: 20px;
+        }
+
+        .room-type-card:hover {
+            border-color: var(--accent-color);
+            box-shadow: 0 5px 20px rgba(249, 199, 79, 0.3);
+            transform: translateY(-3px);
+        }
+
+        .room-image {
+            width: 300px;
+            height: 250px;
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+
+        .room-content {
+            flex: 1;
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Booking Summary */
+        .booking-summary {
+            background: var(--light-bg);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .summary-row:last-child {
+            border-bottom: none;
+            font-weight: 700;
+            font-size: 1.3rem;
+            color: var(--accent-color);
+            margin-top: 10px;
+            padding-top: 15px;
+            border-top: 2px solid var(--accent-color);
+        }
+
+        /* Info Display */
+        .customer-info-display,
+        .room-info-display {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        /* Buttons */
+        .btn-primary-custom {
+            background: var(--accent-color);
+            color: #000;
+            border: none;
+            padding: 12px 40px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-primary-custom:hover {
+            background: #d4a017;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(249, 199, 79, 0.4);
+        }
+
+        .btn-success-custom {
+            background: var(--success-color);
+            color: white;
+            border: none;
+            padding: 12px 40px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-success-custom:hover {
+            background: #229954;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(39, 174, 96, 0.4);
+        }
+
+        .btn-secondary-custom {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 12px 40px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-secondary-custom:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+
+        .btn-outline-primary {
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+        }
+
+        .btn-outline-primary:hover {
+            background: var(--accent-color);
+            color: #000;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            body {
+                margin-top: 60px; /* Giảm margin cho mobile */
+            }
+
+            .booking-container {
+                padding: 10px;
+            }
+
+            .room-type-card {
+                flex-direction: column;
+            }
+
+            .room-image {
+                width: 100%;
+                height: 200px;
+            }
+        }
+
+        .payment-method {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .payment-method .form-check {
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .payment-method .form-check:hover {
+            border-color: var(--accent-color);
+            background: white;
+        }
+
+        .payment-method .form-check-input:checked ~ .form-check-label {
+            font-weight: 600;
+        }
+
+    </style>
+
+</head>
+<body>
+<div th:replace="~{fragments/header :: header}"></div>
+
+<div class="booking-container">
+    <!-- Progress Steps -->
+    <div class="progress-steps">
+        <div class="steps">
+            <div class="step" th:classappend="${currentStep >= 1} ? 'active' : ''">
+                <div class="step-number">1</div>
+                <div class="step-title">Chọn Phòng</div>
+                <div class="step-line"></div>
+            </div>
+            <div class="step" th:classappend="${currentStep >= 2} ? 'active' : ''">
+                <div class="step-number">2</div>
+                <div class="step-title">Đặt Phòng</div>
+                <div class="step-line"></div>
+            </div>
+            <div class="step" th:classappend="${currentStep >= 3} ? 'active' : ''">
+                <div class="step-number">3</div>
+                <div class="step-title">Thanh Toán</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Step 1: Room Selection -->
+    <div id="roomSelectionSection" th:classappend="${currentStep != 1} ? 'hidden' : ''">
+        <div class="search-card">
+            <h2 class="card-title"><i class="bi bi-search"></i> Tìm Kiếm Phòng</h2>
+            <form th:action="@{/booking/search}" method="get" id="searchForm">
+                <div class="row g-3">
+                    <div class="col-md-6 col-lg-3">
+                        <label for="checkInDate" class="form-label">
+                            <i class="bi bi-calendar-check"></i> Ngày nhận phòng
+                        </label>
+                        <input type="date" class="form-control" id="checkInDate" name="checkInDate"
+                               th:value="${checkInDate != null ? checkInDate : #temporals.format(#temporals.createNow(), 'yyyy-MM-dd')}"
+                               required>
+                    </div>
+                    <div class="col-md-6 col-lg-3">
+                        <label for="checkOutDate" class="form-label">
+                            <i class="bi bi-calendar-x"></i> Ngày trả phòng
+                        </label>
+                        <input type="date" class="form-control" id="checkOutDate" name="checkOutDate"
+                               th:value="${checkOutDate != null ? checkOutDate : #temporals.format(#temporals.createNow().plusDays(1), 'yyyy-MM-dd')}"
+                               required>
+                    </div>
+                    <div class="col-md-6 col-lg-2">
+                        <label for="amountPerson" class="form-label">
+                            <i class="bi bi-people"></i> Số người
+                        </label>
+                        <select class="form-select" id="amountPerson" name="amountPerson" required>
+                            <option value="1" th:selected="${amountPerson == null or amountPerson == 1}">1 người</option>
+                            <option value="2" th:selected="${amountPerson == 2}">2 người</option>
+                            <option value="3" th:selected="${amountPerson == 3}">3 người</option>
+                            <option value="4" th:selected="${amountPerson == 4}">4 người</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 col-lg-2">
+                        <label for="promotionCode" class="form-label">
+                            <i class="bi bi-gift"></i> Mã khuyến mãi
+                        </label>
+                        <input type="text" class="form-control" id="promotionCode" name="promotionCode"
+                               th:value="${promotionCode}" placeholder="Nhập mã">
+                    </div>
+                    <div class="col-md-12 col-lg-2">
+                        <label class="form-label d-none d-lg-block">&nbsp;</label>
+                        <button type="submit" class="btn btn-primary-custom w-100">
+                            <i class="bi bi-search"></i> Tìm kiếm
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div class="alert alert-info mb-3">
+            <i class="bi bi-clock-fill"></i>
+            <strong>Lưu ý:</strong>
+            <ul class="mb-0 mt-2">
+                <li>Check-in: Trước 12:00 trưa</li>
+                <li>Check-out: Trước 14:00 chiều</li>
+            </ul>
+        </div>
+
+        <!-- Search Results -->
+        <div class="search-card" th:if="${roomTypes != null && !roomTypes.isEmpty()}">
+            <h2 class="card-title"><i class="bi bi-house-door"></i> Kết Quả Tìm Kiếm</h2>
+
+            <div class="alert alert-info" th:if="${message}" th:text="${message}"></div>
+            <div class="alert alert-danger" th:if="${error}" th:text="${error}"></div>
+
+            <div th:each="roomType : ${roomTypes}" class="room-type-card">
+                    <img th:src="${roomType.images != null and !roomType.images.isEmpty()
+                   ? roomType.images[0].imageUrl
+                   : '/images/default-room.jpg'}"
+                         th:alt="${roomType.roomTypeName}"
+                         class="room-image"
+                         onerror="this.src='/images/default-room.jpg'">
+
+                <div class="room-content">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h3 th:text="${roomType.roomTypeName}" class="mb-2"></h3>
+                            <div class="d-flex gap-2 flex-wrap">
+                                <span class="badge bg-success">
+                                    <i class="bi bi-check-circle"></i>
+                                    <span th:text="${roomType.availableCount}"></span> phòng trống
+                                </span>
+                                <span class="badge bg-info">
+                                    <i class="bi bi-people-fill"></i>
+                                    <span th:text="${roomType.amountPerson}"></span> người
+                                </span>
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <h3 class="text-danger mb-0">
+                                <span th:text="${#numbers.formatDecimal(roomType.price, 0, 'COMMA', 0, 'POINT')}"></span>đ
+                            </h3>
+                            <small class="text-muted">/đêm</small>
+                        </div>
+                    </div>
+
+                    <p th:text="${roomType.description}" class="mb-3"></p>
+
+                    <div class="mb-2" th:if="${roomType.device != null && !#strings.isEmpty(roomType.device)}">
+                        <strong><i class="bi bi-tv"></i> Thiết bị:</strong>
+                        <span th:text="${roomType.device}" class="text-muted"></span>
+                    </div>
+
+                    <div class="mb-3" th:if="${roomType.utilities != null && !#strings.isEmpty(roomType.utilities)}">
+                        <strong><i class="bi bi-star"></i> Tiện ích:</strong>
+                        <span th:text="${roomType.utilities}" class="text-muted"></span>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <a th:href="@{/booking/room-detail/{id}(id=${roomType.roomTypeId},
+                            checkInDate=${checkInDate},
+                            checkOutDate=${checkOutDate},
+                            amountPerson=${amountPerson},
+                            promotionCode=${promotionCode})}"
+                           class="btn btn-outline-primary flex-grow-1">
+                            <i class="bi bi-eye"></i> Xem Chi Tiết
+                        </a>
+                        <form th:action="@{/booking/select-room}" method="post" class="flex-grow-1">
+                            <input type="hidden" name="roomTypeId" th:value="${roomType.roomTypeId}">
+                            <input type="hidden" name="checkInDate" th:value="${checkInDate}">
+                            <input type="hidden" name="checkOutDate" th:value="${checkOutDate}">
+                            <input type="hidden" name="amountPerson" th:value="${amountPerson}">
+                            <input type="hidden" name="promotionCode" th:value="${promotionCode}">
+                            <button type="submit" class="btn btn-success-custom w-100">
+                                <i class="bi bi-check-circle"></i> Chọn Phòng
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- No Results -->
+        <div class="search-card" th:if="${checkInDate != null && (roomTypes == null || roomTypes.isEmpty())}">
+            <div class="alert alert-warning text-center">
+                <i class="bi bi-exclamation-triangle fs-1"></i>
+                <h4 class="mt-3">Không tìm thấy phòng phù hợp!</h4>
+                <p class="mb-0">Vui lòng thử với ngày khác hoặc số người khác.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Step 2: Booking Information -->
+    <div id="bookingInfoSection" th:classappend="${currentStep != 2} ? 'hidden' : ''">
+        <div class="booking-card">
+            <h2 class="card-title"><i class="bi bi-person-fill"></i> Thông Tin Đặt Phòng</h2>
+
+            <div th:if="${currentUser != null}" class="alert alert-info mb-4">
+                <i class="bi bi-info-circle-fill"></i>
+                Bạn đang đăng nhập với tài khoản: <strong th:text="${currentUser.username}"></strong>
+            </div>
+
+            <form id="bookingForm" th:action="@{/booking/confirm}" method="post">
+                <input type="hidden" name="roomTypeId" th:value="${selectedRoomType?.roomTypeId}">
+                <input type="hidden" name="checkInDate" th:value="${checkInDate}">
+                <input type="hidden" name="checkOutDate" th:value="${checkOutDate}">
+                <input type="hidden" name="amountPerson" th:value="${amountPerson}">
+                <input type="hidden" name="promotionCode" th:value="${promotionCode}">
+
+                <!-- Guest Information (if not logged in) -->
+                <div th:if="${currentUser == null}" class="mb-4">
+                    <h5 class="mb-3"><i class="bi bi-person-badge"></i> Thông Tin Khách Hàng</h5>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="customerName" class="form-label">
+                                Họ và Tên <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control" id="customerName"
+                                   name="customerName" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="customerPhone" class="form-label">
+                                Số Điện Thoại <span class="text-danger">*</span>
+                            </label>
+                            <input type="tel" class="form-control" id="customerPhone"
+                                   name="customerPhone" required
+                                   pattern="[0-9]{10,11}"
+                                   placeholder="0123456789">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="customerEmail" class="form-label">
+                                Email <span class="text-danger">*</span>
+                            </label>
+                            <input type="email" class="form-control" id="customerEmail"
+                                   name="customerEmail" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="customerAddress" class="form-label">Địa Chỉ</label>
+                            <input type="text" class="form-control" id="customerAddress"
+                                   name="customerAddress">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Customer Information (if logged in) -->
+                <div th:if="${currentUser != null}" class="mb-4">
+                    <h5 class="mb-3"><i class="bi bi-person-check-fill"></i> Thông Tin Khách Hàng</h5>
+                    <div class="customer-info-display">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <strong>Tên tài khoản:</strong>
+                                <span th:text="${currentUser.username}"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <strong>Email:</strong>
+                                <span th:text="${currentUser.email}"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <strong>Số Điện Thoại:</strong>
+                                <span th:text="${currentUser.phone}"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <strong>Địa chỉ:</strong>
+                                <span th:text="${currentUser.address}"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Room Information -->
+                <div class="mb-4">
+                    <h5 class="mb-3"><i class="bi bi-house-door-fill"></i> Thông Tin Phòng Đã Chọn</h5>
+                    <div class="room-info-display" th:if="${selectedRoomType}">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <strong>Loại phòng:</strong>
+                                <span th:text="${selectedRoomType.roomTypeName}"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <strong>Giá phòng/đêm:</strong>
+                                <span th:text="${#numbers.formatDecimal(selectedRoomType.price, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <strong>Ngày nhận phòng:</strong>
+                                <span th:text="${#temporals.format(checkInDate, 'dd/MM/yyyy')}"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <strong>Ngày trả phòng:</strong>
+                                <span th:text="${#temporals.format(checkOutDate, 'dd/MM/yyyy')}"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <strong>Số người:</strong>
+                                <span th:text="${amountPerson}"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <strong>Số đêm:</strong>
+                                <span th:text="${numberOfNights}"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <!-- Booking Summary -->
+                <div class="booking-summary">
+                    <h5 class="mb-3"><i class="bi bi-receipt"></i> Tổng Quan Đơn Hàng</h5>
+                    <div class="summary-row">
+                        <span>Giá phòng / đêm:</span>
+                        <strong th:text="${#numbers.formatDecimal(selectedRoomType?.price, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'"></strong>
+                    </div>
+                    <div class="summary-row">
+                        <span>Số đêm:</span>
+                        <strong th:text="${numberOfNights}"></strong>
+                    </div>
+                    <div class="summary-row" th:if="${promotion != null}">
+                        <span>Giảm giá (<span th:text="${promotion.code}"></span>):</span>
+                        <strong class="text-success" th:text="'-' + ${#numbers.formatDecimal(discount, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'"></strong>
+                    </div>
+                    <div class="summary-row">
+                        <span>Tổng tiền:</span>
+                        <strong th:text="${#numbers.formatDecimal(totalAmount, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'"></strong>
+                    </div>
+                </div>
+
+
+                <div class="d-flex justify-content-between mt-4">
+                    <button type="button" class="btn btn-secondary-custom" onclick="window.history.back()">
+                        <i class="bi bi-arrow-left"></i> Quay Lại
+                    </button>
+                    <button type="submit" class="btn btn-success-custom">
+                        <i class="bi bi-check-circle"></i> Xác Nhận Đặt Phòng
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Step 3: Payment -->
+    <div id="paymentSection" th:classappend="${currentStep != 3} ? 'hidden' : ''">
+        <div class="booking-card">
+            <h2 class="card-title"><i class="bi bi-credit-card"></i> Thanh Toán</h2>
+
+            <div th:if="${booking != null}">
+                <!-- Booking Summary -->
+                <div class="booking-summary mb-4">
+                    <h5 class="mb-3"><i class="bi bi-receipt"></i> Thông Tin Đặt Phòng</h5>
+                    <div class="summary-row">
+                        <span>Mã đặt phòng:</span>
+                        <strong th:text="${booking.bookingId}"></strong>
+                    </div>
+                    <div class="summary-row">
+                        <span>Loại phòng:</span>
+                        <strong th:text="${booking.room.roomType.roomTypeName}"></strong>
+                    </div>
+                    <div class="summary-row">
+                        <span>Số phòng:</span>
+                        <strong th:text="${booking.room.roomNumber}"></strong>
+                    </div>
+                    <div class="summary-row">
+                        <span>Ngày nhận phòng:</span>
+                        <strong th:text="${#temporals.format(booking.checkInDate, 'dd/MM/yyyy')}"></strong>
+                    </div>
+                    <div class="summary-row">
+                        <span>Ngày trả phòng:</span>
+                        <strong th:text="${#temporals.format(booking.checkOutDate, 'dd/MM/yyyy')}"></strong>
+                    </div>
+                    <div class="summary-row">
+                        <span>Tổng tiền:</span>
+                        <strong class="text-danger"
+                                th:text="${#numbers.formatDecimal(booking.totalPrice, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">
+                        </strong>
+                    </div>
+                </div>
+
+                <!-- Payment Warning -->
+                <div class="alert alert-warning mb-4">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    <strong>Lưu ý quan trọng:</strong>
+                    <ul class="mb-0 mt-2">
+                        <li>Booking sẽ tự động hủy sau 2 phút nếu không thanh toán</li>
+                        <li>Vui lòng hoàn tất thanh toán để xác nhận đặt phòng</li>
+                    </ul>
+                </div>
+
+                <!-- Payment Method -->
+                <div class="mb-4">
+                    <h5 class="mb-3"><i class="bi bi-wallet2"></i> Phương Thức Thanh Toán</h5>
+                    <div class="payment-method">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="paymentMethod"
+                                   id="vnpay" value="vnpay" checked>
+                            <label class="form-check-label d-flex align-items-center" for="vnpay">
+                                <img src="/images/vnpay-logo.png" alt="VNPay"
+                                     style="height: 30px; margin-right: 10px;">
+                                Thanh toán qua VNPay
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payment Form -->
+                <form th:action="@{/booking/payment/create}" method="post">
+                    <input type="hidden" name="bookingId" th:value="${bookingId}">
+
+                    <div class="d-flex justify-content-between mt-4">
+                        <button type="button" class="btn btn-secondary-custom"
+                                onclick="window.location.href='/booking/search'">
+                            <i class="bi bi-arrow-left"></i> Quay Về Trang Chủ
+                        </button>
+                        <button type="submit" class="btn btn-success-custom">
+                            <i class="bi bi-credit-card"></i> Thanh Toán Ngay
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Form validation
+    document.getElementById('searchForm')?.addEventListener('submit', function(e) {
+        const checkIn = new Date(document.getElementById('checkInDate').value);
+        const checkOut = new Date(document.getElementById('checkOutDate').value);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        if (checkIn < today) {
+            e.preventDefault();
+            alert('Ngày nhận phòng phải từ hôm nay trở đi');
+            return;
+        }
+
+        if (checkOut <= checkIn) {
+            e.preventDefault();
+            alert('Ngày trả phòng phải sau ngày nhận phòng');
+            return;
+        }
+    });
+
+    // Date constraints
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('checkInDate')?.setAttribute('min', today);
+    document.getElementById('checkOutDate')?.setAttribute('min', today);
+
+    document.getElementById('checkInDate')?.addEventListener('change', function() {
+        document.getElementById('checkOutDate')?.setAttribute('min', this.value);
+    });
+</script>
+</body>
+</html>
