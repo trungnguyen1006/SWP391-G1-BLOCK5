@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/reception-layout}">
+<head>
+    <title>Quản Lý Phòng</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="container-fluid">
+        <div class="row mb-4">
+            <div class="col">
+                <h2 class="text-white mb-4">
+                    <i class="fas fa-door-open me-2"></i>Quản Lý Phòng
+                </h2>
+            </div>
+        </div>
+
+        <!-- Form Tìm Kiếm -->
+        <div class="card mb-4" style="background: rgba(255, 255, 255, 0.95); border-radius: 15px;">
+            <div class="card-body">
+                <form th:action="@{/reception/rooms}" method="get" class="row g-3">
+                    <div class="col-md-8">
+                        <input type="text"
+                               class="form-control"
+                               name="keyword"
+                               th:value="${keyword}"
+                               placeholder="Tìm kiếm theo số phòng, loại phòng hoặc trạng thái...">
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-search me-2"></i>Tìm Kiếm
+                        </button>
+                    </div>
+                    <div class="col-md-2">
+                        <a th:href="@{/reception/rooms}" class="btn btn-secondary w-100">
+                            <i class="fas fa-redo me-2"></i>Làm Mới
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Bảng Danh Sách Phòng -->
+        <div class="card" style="background: rgba(255, 255, 255, 0.95); border-radius: 15px;">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                        <tr>
+                            <th>Số Phòng</th>
+                            <th>Loại Phòng</th>
+                            <th>Trạng Thái</th>
+                            <th>Thao Tác</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="room : ${rooms}">
+                            <td>
+                                <strong th:text="${room.roomNumber}"></strong>
+                            </td>
+                            <td th:text="${room.roomType.roomTypeName}"></td>
+                            <td>
+                                <span class="badge"
+                                      th:classappend="${room.status.name() == 'AVAILABLE'} ? 'bg-success' :
+                                                      (${room.status.name() == 'OCCUPIED'} ? 'bg-danger' :
+                                                      (${room.status.name() == 'UNDER_MAINTENANCE'} ? 'bg-warning' : 'bg-secondary'))"
+                                      th:text="${room.status.name() == 'AVAILABLE' ? 'Trống' :
+                                               (room.status.name() == 'OCCUPIED' ? 'Đang Sử Dụng' :
+                                               (room.status.name() == 'UNDER_MAINTENANCE' ? 'Bảo Trì' : room.status.name()))}">
+                                </span>
+                            </td>
+                            <td>
+                                <a th:href="@{/reception/update/{id}/rooms(id=${room.roomId})}"
+                                   class="btn btn-sm btn-primary">
+                                    <i class="fas fa-edit"></i> Cập Nhật Trạng Thái
+                                </a>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(rooms)}">
+                            <td colspan="4" class="text-center text-muted py-4">
+                                <i class="fas fa-inbox fa-3x mb-3 d-block"></i>
+                                Không tìm thấy phòng nào
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Phân Trang -->
+                <nav th:if="${totalPages > 1}" class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                            <a class="page-link"
+                               th:href="@{/reception/rooms(page=${currentPage - 1}, keyword=${keyword})}">
+                                <i class="fas fa-chevron-left"></i> Trước
+                            </a>
+                        </li>
+
+                        <li class="page-item"
+                            th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+                            th:classappend="${i == currentPage} ? 'active'">
+                            <a class="page-link"
+                               th:href="@{/reception/rooms(page=${i}, keyword=${keyword})}"
+                               th:text="${i + 1}">
+                            </a>
+                        </li>
+
+                        <li class="page-item" th:classappend="${currentPage == totalPages - 1} ? 'disabled'">
+                            <a class="page-link"
+                               th:href="@{/reception/rooms(page=${currentPage + 1}, keyword=${keyword})}">
+                                Sau <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+
+                <div class="text-center text-muted mt-3">
+                    Hiển thị <strong th:text="${rooms.size()}"></strong> trong tổng số <strong th:text="${totalItems}"></strong> phòng
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

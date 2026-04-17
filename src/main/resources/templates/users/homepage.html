@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="vi">
 <head>
-    <meta charset="UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Khách sạn Hội An | Di sản phương Đông sống động</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -603,8 +603,7 @@
 
 <section class="about">
     <h2>Về khách sạn Hội An</h2>
-    <p>Khám phá nét di sản phương Đông giữa lòng phố cổ Hội An. Khách sạn của chúng tôi mang đến không gian thanh lịch,
-        kết hợp giữa truyền thống và hiện đại — lý tưởng cho chuyến nghỉ dưỡng hoặc công tác.</p>
+    <p>Khám phá nét di sản phương Đông giữa lòng phố cổ Hội An. Khách sạn của chúng tôi mang đến không gian thanh lịch, kết hợp giữa truyền thống và hiện đại — lý tưởng cho chuyến nghỉ dưỡng hoặc công tác.</p>
 </section>
 
 <section class="rooms" id="rooms">
@@ -645,15 +644,12 @@
 <section class="dining" id="dining">
     <div class="dining-container">
         <div class="dining-image">
-            <img src="https://images.unsplash.com/photo-1553621042-f6e147245754?auto=format&fit=crop&w=800&q=80"
-                 alt="Nhà hàng Hội An">
+            <img src="https://images.unsplash.com/photo-1553621042-f6e147245754?auto=format&fit=crop&w=800&q=80" alt="Nhà hàng Hội An">
         </div>
 
         <div class="dining-content">
             <h2>Ẩm thực</h2>
-            <p>Khách sạn Hội An tự hào mang đến trải nghiệm ẩm thực độc đáo, kết hợp hương vị truyền thống Hội An với
-                những sáng tạo hiện đại. Với tầm nhìn ra phố cổ được che phủ ánh nắng chiều, mỗi bữa ăn tại đây sẽ trở
-                thành những ký ức không thể quên của kỳ nghỉ tại Hội An.</p>
+            <p>Khách sạn Hội An tự hào mang đến trải nghiệm ẩm thực độc đáo, kết hợp hương vị truyền thống Hội An với những sáng tạo hiện đại.  Với tầm nhìn ra phố cổ được che phủ ánh nắng chiều, mỗi bữa ăn tại đây sẽ trở thành những ký ức không thể quên của kỳ nghỉ tại Hội An.</p>
             <a href="restaurants" class="dining-link">Xem thêm</a>
         </div>
     </div>
@@ -664,17 +660,12 @@
     <div class="amenities-container">
         <div class="amenities-content">
             <h2>Tiện nghi</h2>
-            <p>Khách sạn Hội An cung cấp những tiện nghi hiện đại để Quý khách có thể thư giãn và tái tạo năng lượng sau
-                những ngày khám phá. Hồ bơi ngoài trời với tầm nhìn tuyệt đẹp là nơi lý tưởng để thoát khỏi nắng nóng
-                Hội An, trong khi trung tâm Spa & Massage của chúng tôi mang đến những liệu pháp chữa lành truyền thống
-                kết hợp với kỹ thuật hiện đại. Phòng tập thể hình được trang bị đầy đủ dụng cụ giúp Quý khách duy trì
-                sức khỏe.</p>
+            <p>Khách sạn Hội An cung cấp những tiện nghi hiện đại để Quý khách có thể thư giãn và tái tạo năng lượng sau những ngày khám phá. Hồ bơi ngoài trời với tầm nhìn tuyệt đẹp là nơi lý tưởng để thoát khỏi nắng nóng Hội An, trong khi trung tâm Spa & Massage của chúng tôi mang đến những liệu pháp chữa lành truyền thống kết hợp với kỹ thuật hiện đại. Phòng tập thể hình được trang bị đầy đủ dụng cụ giúp Quý khách duy trì sức khỏe.</p>
             <a href="amenities" class="amenities-link">Xem thêm</a>
         </div>
 
         <div class="amenities-image">
-            <img src="https://images.unsplash.com/photo-1558611848-73f7eb4001a1?auto=format&fit=crop&w=800&q=80"
-                 alt="Phòng tập thể hình hiện đại">
+            <img src="https://images.unsplash.com/photo-1558611848-73f7eb4001a1?auto=format&fit=crop&w=800&q=80" alt="Phòng tập thể hình hiện đại">
         </div>
     </div>
 </section>
@@ -699,7 +690,7 @@
 
     setInterval(showNextSlide, 5000);
 
-    document.getElementById('searchForm')?.addEventListener('submit', function (e) {
+    document.getElementById('searchForm')?.addEventListener('submit', function(e) {
         const checkIn = new Date(document.getElementById('checkInDate').value);
         const checkOut = new Date(document.getElementById('checkOutDate').value);
         const today = new Date();
@@ -721,7 +712,7 @@
     const today = new Date().toISOString().split('T')[0];
     document.getElementById('checkInDate')?.setAttribute('min', today);
     document.getElementById('checkOutDate')?.setAttribute('min', today);
-    document.getElementById('checkInDate')?.addEventListener('change', function () {
+    document.getElementById('checkInDate')?.addEventListener('change', function() {
         const checkInDate = this.value;
         document.getElementById('checkOutDate')?.setAttribute('min', checkInDate);
     });
