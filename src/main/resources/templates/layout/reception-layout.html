@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Receptionist Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #64748b;
+            color: #333;
+            min-height: 100vh;
+        }
+
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: 300px;
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            border-right: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .dashboard-title {
+            font-size: 22px;
+            font-weight: 700;
+            background: #64748b;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 35px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e2e8f0;
+            text-align: center;
+        }
+
+        .navigation {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 18px 22px;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            color: #64748b;
+            font-weight: 500;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid transparent;
+            text-decoration: none;
+        }
+
+        .nav-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: #64748b;
+            transition: left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: -1;
+            border-radius: 15px;
+        }
+
+        .nav-item:hover::before {
+            left: 0;
+        }
+
+        .nav-item:hover {
+            color: #ffffff;
+            transform: translateX(8px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .nav-item.active {
+            background: #64748b;
+            color: #ffffff;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .nav-item.active::before {
+            left: 0;
+        }
+
+        .nav-item i {
+            font-size: 18px;
+            margin-right: 15px;
+            width: 24px;
+            text-align: center;
+            z-index: 1;
+        }
+
+        .nav-item span {
+            font-size: 16px;
+            z-index: 1;
+        }
+
+        /* Main Content Area */
+        .main-content {
+            flex: 1;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 0 20px 20px 0;
+            margin: 20px 20px 20px 0;
+            box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.1);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .dashboard-container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                padding: 20px;
+                border-right: none;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            }
+
+            .navigation {
+                flex-direction: row;
+                overflow-x: auto;
+            }
+
+            .main-content {
+                margin: 0;
+                border-radius: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="dashboard-container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <h1 class="dashboard-title">Receptionist Dashboard</h1>
+
+        <nav class="navigation">
+            <a th:href="@{/reception}"
+               class="nav-item">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+
+            <a th:href="@{/reception/bookings}"
+               class="nav-item">
+                <i class="fas fa-list"></i>
+                <span>List Customer Booking</span>
+            </a>
+
+            <a th:href="@{/reception/rooms}"
+               class="nav-item">
+                <i class="fas fa-users"></i>
+                <span>Update Status Room</span>
+            </a>
+
+        </nav>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+        <div layout:fragment="content">
+            <!-- Content từ page con sẽ được insert vào đây -->
+        </div>
+    </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script layout:fragment="scripts">
+    <!-- Scripts từ page con -->
+</script>
+</body>
+</html>
