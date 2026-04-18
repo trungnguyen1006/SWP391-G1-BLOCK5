@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/admin-layout}">
+<head>
+    <title>Quản lý Blog</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <h1>Blog</h1>
+    <form method="get" class="form" style="display:flex;gap:8px;align-items:center; width: 100%;">
+        <input
+                type="text"
+                name="q"
+                th:value="${q}"
+                placeholder="Tìm theo tiêu đề..."
+                style="width: 80%; padding: 10px 15px;"
+        />
+        <button
+                class="btn btn-primary"
+                type="submit"
+                style="width: 20%; padding: 8px 12px; box-sizing: border-box;"
+        >
+            <i class="fa-solid fa-magnifying-glass"></i> Tìm
+        </button>
+    </form>
+
+    <div>
+        <a class="btn btn-primary" th:href="@{/admin/blogs/create}" style="padding:6px 12px;margin-top:8px;display:inline-block">
+            <i class="fa-solid fa-plus"></i> Thêm
+        </a>
+    </div>
+
+    <table class="table" style="width:100%;margin-top:12px">
+        <thead>
+        <tr>
+            <th>Ảnh</th>
+            <th>Tiêu đề</th>
+            <th>Mô tả ngắn</th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="blog : ${blogs}">
+            <td>
+                <img th:src="${blog.imageUrl != null ? blog.imageUrl : '/images/placeholder-blog.svg'}"
+                     alt="img"
+                     style="width:72px;height:48px;object-fit:cover;border-radius:6px"
+                     onerror="this.src='/images/placeholder-blog.svg'"/>
+            </td>
+            <td th:text="${blog.title}">Tiêu đề</td>
+            <td th:text="${blog.excerpt != null ? (#strings.length(blog.excerpt) > 80 ? #strings.substring(blog.excerpt,0,80) + '...' : blog.excerpt) : ''}">
+                Mô tả
+            </td>
+            <td style="text-align:right;white-space:nowrap">
+                <a class="btn btn-info" th:href="@{/admin/blogs/{id}/view(id=${blog.id})}">
+                    <i class="fa-regular fa-eye"></i> Xem
+                </a>
+                <a class="btn btn-warning" th:href="@{/admin/blogs/{id}(id=${blog.id})}">
+                    <i class="fa-regular fa-pen-to-square"></i> Sửa
+                </a>
+                <form th:action="@{/admin/blogs/{id}/delete(id=${blog.id})}" method="post" style="display:inline">
+                    <button class="btn btn-danger" type="submit" onclick="return confirm('Xóa blog?')">
+                        <i class="fa-regular fa-trash-can"></i> Xóa
+                    </button>
+                </form>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <div class="pagination" style="display:flex;gap:8px;margin-top:10px;align-items:center">
+        <a class="btn" th:href="@{/admin/blogs(page=${currentPage > 0 ? currentPage - 1 : 0}, q=${q})}">«</a>
+
+        <th:block th:each="p : ${#numbers.sequence(1, totalPages > 0 ? totalPages : 1)}">
+            <a class="btn"
+               th:class="${p == currentPage + 1 ? 'btn btn-primary' : 'btn'}"
+               th:text="${p}"
+               th:href="@{/admin/blogs(page=${p - 1}, q=${q})}">
+            </a>
+        </th:block>
+
+        <a class="btn" th:href="@{/admin/blogs(page=${currentPage + 1 < totalPages ? currentPage + 1 : totalPages - 1}, q=${q})}">»</a>
+
+        <span style="margin-left:8px">
+                Trang <span th:text="${totalPages > 0 ? currentPage + 1 : 1}"></span>/<span th:text="${totalPages > 0 ? totalPages : 1}"></span>
+            </span>
+    </div>
+</div>
+</body>
+</html>
