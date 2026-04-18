@@ -1,7 +1,7 @@
 package com.hotelmanage.controller;
 
 import com.hotelmanage.entity.room.RoomType;
-import com.hotelmanage.service.RoomTypeService;
+import com.hotelmanage.service.room.RoomTypeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;

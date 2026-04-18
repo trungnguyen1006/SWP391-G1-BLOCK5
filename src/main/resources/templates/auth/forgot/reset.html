@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Đặt lại mật khẩu - Hoi An Hotel</title>
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+    <style>
+        .auth-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding-top: 80px;
+        }
+
+        .auth-card {
+            max-width: 400px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .auth-card h1 {
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .progress {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--light-bg);
+        }
+
+        .dot.active {
+            background: var(--secondary-color);
+        }
+
+        .form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .form label {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            color: var(--primary-color);
+            font-weight: 500;
+        }
+
+        .form input {
+            padding: 0.75rem;
+            border: 1px solid var(--light-bg);
+            border-radius: 4px;
+            width: 100%;
+        }
+
+        .form input:focus {
+            outline: 2px solid var(--secondary-color);
+            border-color: transparent;
+        }
+
+        .btn.primary {
+            background: var(--accent-color);
+            color: #000;
+            padding: 0.75rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            width: 100%;
+        }
+
+        .form-note {
+            text-align: center;
+            margin-top: 1rem;
+        }
+
+        .form-note a {
+            color: var(--secondary-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .error {
+            color: #dc3545;
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+<body>
+<div th:replace="~{fragments/header :: header}"></div>
+<div class="auth-container">
+    <section class="auth-card">
+        <h1>Đặt lại mật khẩu</h1>
+        <div class="progress">
+            <div class="dot active"></div>
+            <div class="dot active"></div>
+            <div class="dot active"></div>
+        </div>
+        <form th:action="@{/forgot-password/reset}" method="post" th:object="${resetForm}" class="form">
+            <label>
+                <span>Mật khẩu mới</span>
+                <input type="password" th:field="*{password}" placeholder="Tối thiểu 6 ký tự" required />
+                <small class="error" th:errors="*{password}"></small>
+            </label>
+            <label>
+                <span>Nhập lại mật khẩu</span>
+                <input type="password" th:field="*{confirmPassword}" placeholder="Nhập lại mật khẩu" required />
+                <small class="error" th:errors="*{confirmPassword}"></small>
+            </label>
+            <button class="btn primary" type="submit">Lưu mật khẩu</button>
+        </form>
+        <p class="form-note"><a th:href="@{/login}">Quay lại đăng nhập</a></p>
+    </section>
+</div>
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>
