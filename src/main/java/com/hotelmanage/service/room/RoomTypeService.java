@@ -1,4 +1,4 @@
-package com.hotelmanage.service;
+package com.hotelmanage.service.room;
 
 import com.hotelmanage.entity.room.RoomType;
 import com.hotelmanage.repository.room.RoomTypeRepository;
