@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hồ sơ người dùng - Hoi An Hotel</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+    <style>
+        .container {
+            max-width: 1200px;
+            margin: 100px auto 40px;
+            padding: 0 20px;
+        }
+        .profile-card {
+            background: #fff;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            margin-bottom: 30px;
+            transition: transform 0.2s;
+        }
+        .profile-card:hover {
+            transform: translateY(-5px);
+        }
+        .profile-header {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 30px;
+            align-items: center;
+        }
+        .avatar {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid #f9c74f;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .profile-info h2 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 2em;
+        }
+        .profile-info p {
+            color: #666;
+            margin: 10px 0;
+            font-size: 1.1em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .profile-info b {
+            color: #2c3e50;
+        }
+        .btn {
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            font-size: 1em;
+            background: #f9c74f;
+            color: #2c3e50;
+        }
+        .btn.primary {
+            background: #f9c74f;
+            color: #2c3e50;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(249, 199, 79, 0.3);
+        }
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(5px);
+        }
+        .modal {
+            background: #fff;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #eee;
+        }
+        .form label {
+            display: block;
+            margin-bottom: 15px;
+            font-weight: 500;
+            color: #2c3e50;
+        }
+        .form input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #eee;
+            border-radius: 8px;
+            font-size: 1em;
+            margin-top: 5px;
+            transition: border-color 0.3s;
+        }
+        .form input:focus {
+            border-color: #f9c74f;
+            outline: none;
+        }
+        .dropzone {
+            border: 3px dashed #ddd;
+            padding: 30px;
+            border-radius: 12px;
+            transition: all 0.3s;
+            text-align: center;
+            cursor: pointer;
+            margin: 15px 0;
+        }
+        .dropzone:hover, .dropzone.dragover {
+            border-color: #f9c74f;
+            background: #fff9e6;
+        }
+        .dropzone .hint {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 10px;
+        }
+        .preview {
+            margin-top: 15px;
+        }
+        .preview img {
+            max-width: 200px;
+            border-radius: 10px;
+        }
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            color: #dc3545;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+        .modal-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+        .form-note {
+            text-align: center;
+            padding: 10px;
+            margin-top: 15px;
+            border-radius: 8px;
+            background: #e8f4fd;
+            color: #2c3e50;
+        }
+    </style>
+</head>
+<body>
+<div th:replace="~{fragments/header :: header}"></div>
+
+<section class="container">
+    <div class="profile">
+        <div class="card profile-card">
+            <div class="profile-header">
+                <img class="avatar" th:src="${user != null and !#strings.isEmpty(user.avatarUrl)} ? ${user.avatarUrl} : @{'/images/avatar-placeholder.svg'}"
+                     alt="avatar"
+                     onerror="this.onerror=null; this.src='/images/avatar-placeholder.svg';"/>
+                <div class="profile-info">
+                    <h2 th:text="${user != null} ? ${user.username} : 'Người dùng'">User</h2>
+                    <p>Vai trò: <b th:text="${user != null} ? ${user.role} : 'CUSTOMER'">CUSTOMER</b></p>
+                    <p>Email: <span th:text="${user != null} ? ${user.email} : ''"></span></p>
+                    <p>Số điện thoại: <span th:text="${user != null} ? (${user.phone} ?: 'Chưa cập nhật') : ''"></span></p>
+                    <p>Địa chỉ: <span th:text="${user != null} ? (${user.address} ?: 'Chưa cập nhật') : ''"></span></p>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn" type="button" onclick="openProfileModal()">Cập nhật hồ sơ</button>
+            </div>
+        </div>
+
+        <div class="card profile-card">
+            <h3>Đổi mật khẩu</h3>
+            <div class="alert success" th:if="${param.changed}">Đổi mật khẩu thành công</div>
+            <form th:action="@{/profile/change-password}" method="post" th:object="${changePasswordForm}" class="form">
+                <label>Mật khẩu hiện tại
+                    <input type="password" th:field="*{oldPassword}" placeholder="Nhập mật khẩu hiện tại" required />
+                    <small class="error" th:errors="*{oldPassword}"></small>
+                </label>
+                <label>Mật khẩu mới
+                    <input type="password" th:field="*{password}" placeholder="Tối thiểu 6 ký tự" required />
+                    <small class="error" th:errors="*{password}"></small>
+                </label>
+                <label>Nhập lại mật khẩu mới
+                    <input type="password" th:field="*{confirmPassword}" placeholder="Nhập lại mật khẩu" required />
+                    <small class="error" th:errors="*{confirmPassword}"></small>
+                </label>
+                <button class="btn primary" type="submit">Lưu mật khẩu</button>
+            </form>
+        </div>
+    </div>
+</section>
+
+<!-- Modal Update Profile -->
+<div id="profileModal" class="modal-overlay" onclick="if(event.target.id==='profileModal'){closeProfileModal()}">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="mdl-title">
+        <div class="modal-header">
+            <h3 id="mdl-title">Cập nhật hồ sơ</h3>
+            <button class="btn" type="button" onclick="closeProfileModal()">Đóng</button>
+        </div>
+        <form th:action="@{/profile/update}" method="post" enctype="multipart/form-data" class="form">
+            <label>Tên đăng nhập
+                <input type="text" th:value="${user != null} ? ${user.username} : ''" disabled />
+            </label>
+            <label>Email
+                <input type="email" name="email" th:value="${user != null} ? ${user.email} : ''" disabled />
+            </label>
+            <label>Số điện thoại
+                <input type="text" name="phone" th:value="${user != null} ? ${user.phone} : ''" placeholder="Ví dụ: 0901234567" />
+            </label>
+            <label>Địa chỉ
+                <input type="text" name="address" th:value="${user != null} ? ${user.address} : ''" placeholder="Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành" />
+            </label>
+            <div class="dropzone" id="dz" onclick="dzFile.click()" ondragover="dzDrag(event)" ondragleave="dzLeave(event)" ondrop="dzDrop(event)">
+                <input type="file" id="dzFile" name="avatar" accept="image/*" hidden onchange="dzPreview(this.files)" />
+                <div>Thả ảnh vào đây hoặc bấm để chọn</div>
+                <div class="hint">Hỗ trợ: JPG, PNG, WEBP. Tối đa ~5MB</div>
+                <div class="preview" id="dzPreview">
+                    <img th:src="${user != null and !#strings.isEmpty(user.avatarUrl)} ? ${user.avatarUrl} : @{'/images/avatar-placeholder.svg'}"
+                         alt="preview"
+                         onerror="this.onerror=null; this.src='/images/avatar-placeholder.svg';" />
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn" type="button" onclick="closeProfileModal()">Hủy</button>
+                <button class="btn primary" type="submit">Lưu thay đổi</button>
+            </div>
+            <div class="form-note" th:if="${param.updated}">Cập nhật thành công.</div>
+            <div class="form-note" th:if="${param.updateError}">Cập nhật thất bại, thử lại.</div>
+        </form>
+    </div>
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+<script>
+    const dz = document.getElementById('dz');
+    const dzFile = document.getElementById('dzFile');
+    const dzPreviewEl = document.getElementById('dzPreview');
+    const modal = document.getElementById('profileModal');
+
+    function getCardAvatarSrc() {
+        const avatar = document.querySelector('.profile-header .avatar');
+        return (avatar && avatar.getAttribute('src')) || '/images/avatar-placeholder.svg';
+    }
+    function setPreviewTo(src) {
+        dzPreviewEl.innerHTML = '';
+        const img = document.createElement('img');
+        img.src = src;
+        dzPreviewEl.appendChild(img);
+    }
+    function openProfileModal() {
+        modal.style.display = 'flex';
+        if(dzFile) dzFile.value = '';
+        setPreviewTo(getCardAvatarSrc());
+    }
+    function closeProfileModal() {
+        modal.style.display = 'none';
+        if(dzFile) dzFile.value = '';
+        setPreviewTo(getCardAvatarSrc());
+    }
+    function dzDrag(e) {
+        e.preventDefault();
+        dz.classList.add('dragover');
+    }
+    function dzLeave(e) {
+        e.preventDefault();
+        dz.classList.remove('dragover');
+    }
+    function dzDrop(e) {
+        e.preventDefault();
+        dz.classList.remove('dragover');
+        if(e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]) {
+            dzFile.files = e.dataTransfer.files;
+            dzPreviewFiles(e.dataTransfer.files);
+        }
+    }
+    function dzPreview(files) {
+        dzPreviewFiles(files);
+    }
+    function dzPreviewFiles(files) {
+        dzPreviewEl.innerHTML = '';
+        if(!files || !files[0]) return;
+        const file = files[0];
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const dataUrl = e.target.result;
+            const img = document.createElement('img');
+            img.src = dataUrl;
+            dzPreviewEl.appendChild(img);
+        };
+        reader.readAsDataURL(file);
+    }
+</script>
+</body>
+</html>
