@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pageTitle}">Góp Ý Dịch Vụ</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+    <style>
+        body {
+            background-color: #f7f8fa;
+            font-family: 'Poppins', sans-serif;
+            margin-top: 80px;
+        }
+
+        .feedback-container {
+            max-width: 900px;
+            margin: 0 auto 60px;
+            background: #fff;
+            border-radius: 18px;
+            padding: 40px;
+            box-shadow: 0 20px 45px rgba(15, 47, 72, 0.08);
+        }
+
+        .feedback-header h1 {
+            font-weight: 700;
+            color: #1f3c88;
+        }
+
+        .feedback-header p {
+            color: #6c757d;
+            margin-bottom: 20px;
+        }
+
+        .form-section {
+            margin-bottom: 24px;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: #2f3e5a;
+        }
+
+        .form-select, .form-control {
+            border-radius: 10px;
+            border: 1px solid rgba(31, 60, 136, 0.15);
+            box-shadow: none;
+            padding: 12px 16px;
+        }
+
+        .form-select:focus, .form-control:focus {
+            border-color: #2c80ff;
+            box-shadow: 0 0 0 0.2rem rgba(44, 128, 255, 0.25);
+        }
+
+        .feedback-textarea {
+            min-height: 180px;
+            resize: vertical;
+        }
+
+        .btn-submit {
+            background: linear-gradient(135deg, #1f3c88, #2c80ff);
+            border: none;
+            border-radius: 12px;
+            padding: 14px 28px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-submit:hover {
+            background: linear-gradient(135deg, #182d66, #1f60cc);
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px rgba(31, 60, 136, 0.25);
+        }
+
+        .helper-text {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+
+        .alert {
+            border-radius: 12px;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                margin-top: 60px;
+            }
+
+            .feedback-container {
+                margin: 0 16px 40px;
+                padding: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div th:replace="~{fragments/header :: header}"></div>
+
+<section class="container">
+    <div class="feedback-container">
+        <div class="feedback-header text-center">
+            <h1>Góp Ý Dịch Vụ</h1>
+            <p>Chúng tôi luôn lắng nghe để hoàn thiện. Hãy chia sẻ cảm nhận của bạn về dịch vụ đặt phòng hoặc nhà hàng.</p>
+        </div>
+
+        <div th:if="${successMessage}" class="alert alert-success d-flex align-items-center">
+            <i class="bi bi-check-circle-fill me-2"></i>
+            <span th:text="${successMessage}"></span>
+        </div>
+        <div th:if="${errorMessage}" class="alert alert-danger d-flex align-items-center">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            <span th:text="${errorMessage}"></span>
+        </div>
+
+        <form th:action="@{/feedback}" th:object="${feedbackForm}" method="post" id="feedbackForm">
+            <div class="form-section">
+                <label for="category" class="form-label">Danh mục góp ý <span class="text-danger">*</span></label>
+                <select class="form-select" id="category" th:field="*{category}">
+                    <option value="" disabled selected>Chọn danh mục</option>
+                    <option th:each="category : ${categories}"
+                            th:value="${category}"
+                            th:text="${category.name() == 'BOOKING_SERVICE' ? 'Dịch vụ đặt phòng' :
+                                     (category.name() == 'RESTAURANT' ? 'Nhà hàng' : 'Cả hai')}">
+                    </option>
+                </select>
+                <div class="text-danger mt-1" th:if="${#fields.hasErrors('category')}" th:errors="*{category}"></div>
+                <div class="helper-text mt-2">Chọn danh mục bạn muốn góp ý: dịch vụ đặt phòng, nhà hàng hoặc cả hai.</div>
+            </div>
+
+            <div class="form-section" id="bookingServiceGroup" style="display: none;">
+                <label for="roomType" class="form-label">Dịch vụ đặt phòng</label>
+                <select class="form-select" id="roomType" th:field="*{roomTypeId}">
+                    <option value="" disabled selected>Chọn hạng phòng/dịch vụ</option>
+                    <option th:each="roomType : ${roomTypes}"
+                            th:value="${roomType.roomTypeId}"
+                            th:text="${roomType.roomTypeName}">
+                    </option>
+                </select>
+                <div class="text-danger mt-1" th:if="${#fields.hasErrors('roomTypeId')}" th:errors="*{roomTypeId}"></div>
+            </div>
+
+            <div class="form-section" id="restaurantGroup" style="display: none;">
+                <label for="restaurant" class="form-label">Nhà hàng</label>
+                <select class="form-select" id="restaurant" th:field="*{restaurantId}">
+                    <option value="" disabled selected>Chọn nhà hàng</option>
+                    <option th:each="restaurant : ${restaurants}"
+                            th:value="${restaurant.id}"
+                            th:text="${restaurant.name}">
+                    </option>
+                </select>
+                <div class="text-danger mt-1" th:if="${#fields.hasErrors('restaurantId')}" th:errors="*{restaurantId}"></div>
+            </div>
+
+            <div class="form-section">
+                <label for="content" class="form-label">Nội dung góp ý <span class="text-danger">*</span></label>
+                <textarea class="form-control feedback-textarea"
+                          id="content"
+                          th:field="*{content}"
+                          placeholder="Nhập tối thiểu 10 ký tự, chia sẻ chi tiết góp ý của bạn..."></textarea>
+                <div class="text-danger mt-1" th:if="${#fields.hasErrors('content')}" th:errors="*{content}"></div>
+                <div class="helper-text mt-2">Admin sẽ tiếp nhận và phản hồi qua thông tin tài khoản của bạn.</div>
+            </div>
+
+            <div class="text-end">
+                <button type="submit" class="btn btn-primary btn-submit">
+                    <i class="bi bi-send-fill me-2"></i>Gửi góp ý
+                </button>
+            </div>
+        </form>
+    </div>
+</section>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    const categorySelect = document.getElementById('category');
+    const bookingGroup = document.getElementById('bookingServiceGroup');
+    const restaurantGroup = document.getElementById('restaurantGroup');
+    const roomTypeSelect = document.getElementById('roomType');
+    const restaurantSelect = document.getElementById('restaurant');
+
+    function toggleGroups() {
+        const value = categorySelect.value;
+        bookingGroup.style.display = (value === 'BOOKING_SERVICE' || value === 'BOTH') ? 'block' : 'none';
+        restaurantGroup.style.display = (value === 'RESTAURANT' || value === 'BOTH') ? 'block' : 'none';
+
+        if (value !== 'BOOKING_SERVICE' && value !== 'BOTH') {
+            roomTypeSelect.value = '';
+        }
+        if (value !== 'RESTAURANT' && value !== 'BOTH') {
+            restaurantSelect.value = '';
+        }
+    }
+
+    categorySelect.addEventListener('change', toggleGroups);
+    document.addEventListener('DOMContentLoaded', toggleGroups);
+</script>
+</body>
+</html>
+

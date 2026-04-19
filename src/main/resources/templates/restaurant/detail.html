@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${restaurant != null ? restaurant.name : 'Không tìm thấy'} + ' - Hoi An Hotel'">Chi tiết nhà hàng</title>
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        section {
+            margin-top: 80px;
+            padding: 20px 80px;
+        }
+        .rest-hero {
+            position: relative;
+            margin-bottom: 2rem;
+        }
+        .rest-badge {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        .rest-stat {
+            background: rgba(255,255,255,0.9);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .rest-section {
+            margin: 2rem 0 1rem 0;
+        }
+        .meta-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 8px 0;
+        }
+        .meta-row .icon {
+            color: #f9c74f;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        .rest-menu-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+        .price {
+            color: #e74c3c;
+            font-weight: 500;
+        }
+        .card.soft {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+        }
+    </style>
+</head>
+<body>
+<div th:replace="fragments/header :: header"></div>
+<section>
+    <div th:if="${restaurant != null}">
+        <div class="card rest-hero" style="padding:0;overflow:hidden">
+            <img th:src="${restaurant.imageUrl} ?: @{/images/placeholder-restaurant.svg}" th:alt="${restaurant.name}" style="width:100%;max-height:360px;object-fit:cover" onerror="this.onerror=null; this.src='/images/placeholder-restaurant.svg';"/>
+            <div class="card-body">
+                <h1 class="title" th:text="${restaurant.name}">Tên nhà hàng</h1>
+                <div class="meta-row"><i class="fa-solid fa-utensils icon"></i><span th:text="${restaurant.cuisineType} ?: 'Đang cập nhật'"></span></div>
+                <div class="meta-row"><i class="fa-regular fa-clock icon"></i><span th:text="${restaurant.openingHours} ?: 'Đang cập nhật'"></span></div>
+                <div class="meta-row"><i class="fa-solid fa-wallet icon"></i><span th:text="'Giá tham khảo: ' + (${restaurant.priceRange} ?: 'Đang cập nhật')"></span></div>
+                <div class="meta-row"><i class="fa-solid fa-ticket icon"></i><span th:text="'Khuyến mãi: ' + (${restaurant.promotionText} ?: 'Đang cập nhật')"></span></div>
+            </div>
+            <div class="rest-badge">
+                <div class="rest-stat"><i class="fa-solid fa-leaf"></i><span th:text="${restaurant.cuisineType} ?: 'Ẩm thực'">Ẩm thực</span></div>
+                <div class="rest-stat"><i class="fa-regular fa-clock"></i><span th:text="${restaurant.openingHours} ?: 'Giờ mở cửa'">Giờ</span></div>
+            </div>
+        </div>
+
+        <h2 class="rest-section">Giới thiệu</h2>
+        <div class="card soft" style="padding:16px">
+            <p th:text="${#strings.isEmpty(restaurant.description) ? 'Đang cập nhật...' : restaurant.description}">Mô tả</p>
+        </div>
+
+        <h2 class="rest-section">Liên hệ</h2>
+        <div class="card soft" style="padding:16px">
+            <div class="meta-row"><i class="fa-solid fa-phone icon"></i><span th:text="${restaurant.contactInfo} ?: 'Đang cập nhật'"></span></div>
+        </div>
+
+        <h2 class="rest-section">Thực đơn</h2>
+        <div class="grid">
+            <div class="card rest-menu-card" th:each="m : ${restaurant.menus}">
+                <img th:src="${m.imageUrl} ?: @{/images/placeholder-restaurant.svg}" th:alt="${m.itemName}" onerror="this.onerror=null; this.src='/images/placeholder-restaurant.svg';"/>
+                <div class="card-body" style="padding:12px">
+                    <h3 class="title" th:text="${m.itemName}">Món</h3>
+                    <div class="meta-row"><i class="fa-solid fa-coins icon"></i><span class="price" th:text="(${m.price} != null) ? ${#numbers.formatDecimal(m.price, 0, 'COMMA', 0, 'POINT')} + ' đ' : 'Đang cập nhật'"></span></div>
+                </div>
+            </div>
+        </div>
+
+        <h2>Đánh giá khách hàng</h2>
+        <p>Đang cập nhật...</p>
+    </div>
+    <div th:if="${restaurant == null}">Nhà hàng không tồn tại hoặc đã bị xóa.</div>
+</section>
+<div th:replace="fragments/footer :: footer"></div>
+</body>
+</html>

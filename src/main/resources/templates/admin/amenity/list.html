@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/admin-layout}">
+<head>
+    <title>Quản Lý Tiện Nghi</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Quản Lý Tiện Nghi</h2>
+        <a th:href="@{/admin/amenities/create}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Thêm Tiện Nghi
+        </a>
+    </div>
+
+    <div th:if="${success}" class="alert alert-success alert-dismissible fade show">
+        <span th:text="${success}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show">
+        <span th:text="${error}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <table class="table table-hover datatable">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Tên Tiện Nghi</th>
+                    <th>Ảnh</th>
+                    <th>Hành Động</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="a : ${amenities}">
+                    <td th:text="${a.amenityId}"></td>
+                    <td th:text="${a.amenityName}"></td>
+                    <td>
+                        <img th:src="${a.imageUrl}" alt="Amenity Image" style="width:100px; height:auto;">
+                    </td>
+                    <td>
+                        <a th:href="@{/admin/amenities/edit/{id}(id=${a.amenityId})}"
+                           class="btn btn-sm btn-warning">
+                            <i class="bi bi-pencil"></i> Sửa
+                        </a>
+                        <form th:action="@{/admin/amenities/delete/{id}(id=${a.amenityId})}"
+                              method="post"
+                              style="display:inline"
+                              onsubmit="return confirm('Bạn có chắc muốn xóa tiện nghi này?');">
+                            <button class="btn btn-sm btn-danger">
+                                <i class="bi bi-trash"></i> Xóa
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+</body>
+</html>

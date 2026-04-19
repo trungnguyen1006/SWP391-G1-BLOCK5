@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/reception-layout}">
+<head>
+    <title>Cập Nhật Trạng Thái Phòng</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="container-fluid">
+        <div class="row mb-4">
+            <div class="col">
+                <h2 class="text-white mb-4">
+                    <i class="fas fa-edit me-2"></i>Cập Nhật Trạng Thái Phòng
+                </h2>
+            </div>
+        </div>
+
+        <!-- Form Cập Nhật -->
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card" style="background: rgba(255, 255, 255, 0.95); border-radius: 15px;">
+                    <div class="card-body p-4">
+                        <!-- Thông báo lỗi/thành công -->
+                        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            <span th:text="${error}"></span>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+
+                        <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="fas fa-check-circle me-2"></i>
+                            <span th:text="${success}"></span>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+
+                        <form th:action="@{/reception/update/{id}/rooms(id=${room.roomId})}"
+                              th:object="${room}"
+                              method="post">
+
+                            <!-- Thông tin phòng (Read-only) -->
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">
+                                        <i class="fas fa-door-closed me-2"></i>Số Phòng
+                                    </label>
+                                    <input type="text"
+                                           class="form-control bg-light"
+                                           th:value="${room.roomNumber}"
+                                           readonly>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">
+                                        <i class="fas fa-tag me-2"></i>Loại Phòng
+                                    </label>
+                                    <input type="text"
+                                           class="form-control bg-light"
+                                           th:value="${room.roomType.roomTypeName}"
+                                           readonly>
+                                </div>
+                            </div>
+
+                            <!-- Hidden fields để giữ nguyên các giá trị khác -->
+                            <input type="hidden" th:field="*{roomNumber}">
+                            <input type="hidden" th:field="*{roomType.roomTypeId}">
+
+                            <!-- Trạng thái phòng (Editable) -->
+                            <div class="mb-4">
+                                <label for="status" class="form-label fw-bold">
+                                    <i class="fas fa-info-circle me-2"></i>Trạng Thái Phòng
+                                    <span class="text-danger">*</span>
+                                </label>
+                                <select class="form-select form-select-lg"
+                                        id="status"
+                                        th:field="*{status}"
+                                        required>
+                                    <option value="">-- Chọn trạng thái --</option>
+                                    <option value="AVAILABLE">
+                                        <i class="bi bi-check-circle"></i> Trống
+                                    </option>
+                                    <option value="OCCUPIED">
+                                        <i class="bi bi-person-fill"></i> Đang Sử Dụng
+                                    </option>
+                                    <option value="UNDER_MAINTENANCE">
+                                        <i class="bi bi-tools"></i> Bảo Trì
+                                    </option>
+                                </select>
+                                <div th:if="${#fields.hasErrors('status')}"
+                                     class="invalid-feedback d-block">
+                                    <i class="fas fa-exclamation-triangle me-1"></i>
+                                    <span th:errors="*{status}"></span>
+                                </div>
+                                <div class="form-text">
+                                    <i class="fas fa-lightbulb me-1"></i>
+                                    Chọn trạng thái mới cho phòng
+                                </div>
+                            </div>
+
+                            <!-- Hiển thị trạng thái hiện tại -->
+                            <div class="alert alert-info mb-4">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <strong>Trạng thái hiện tại:</strong>
+                                <span class="badge ms-2"
+                                      th:classappend="${room.status.name() == 'AVAILABLE'} ? 'bg-success' :
+                                                      (${room.status.name() == 'OCCUPIED'} ? 'bg-danger' : 'bg-warning')"
+                                      th:text="${room.status.name() == 'AVAILABLE' ? 'Trống' :
+                                               (room.status.name() == 'OCCUPIED' ? 'Đang Sử Dụng' : 'Bảo Trì')}">
+                                </span>
+                            </div>
+
+                            <!-- Nút hành động -->
+                            <div class="d-flex gap-3 justify-content-end mt-4">
+                                <a th:href="@{/reception/rooms}" class="btn btn-secondary btn-lg px-4">
+                                    <i class="fas fa-times me-2"></i>Hủy
+                                </a>
+                                <button type="submit" class="btn btn-primary btn-lg px-4">
+                                    <i class="fas fa-save me-2"></i>Lưu Thay Đổi
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Ghi chú hướng dẫn -->
+                <div class="card mt-3" style="background: rgba(255, 255, 255, 0.9); border-radius: 15px;">
+                    <div class="card-body">
+                        <h6 class="fw-bold mb-3">
+                            <i class="fas fa-question-circle me-2"></i>Hướng Dẫn Sử Dụng
+                        </h6>
+                        <ul class="mb-0">
+                            <li><strong>Trống:</strong> Phòng sẵn sàng cho khách mới</li>
+                            <li><strong>Đang Sử Dụng:</strong> Phòng đang có khách ở</li>
+                            <li><strong>Bảo Trì:</strong> Phòng đang được sửa chữa/bảo dưỡng</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<th:block layout:fragment="scripts">
+    <script>
+        // Tự động ẩn thông báo sau 5 giây
+        setTimeout(() => {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                const bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
+            });
+        }, 5000);
+
+        // Xác nhận trước khi submit
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const currentStatus = '[[${room.status.name()}]]';
+            const newStatus = document.getElementById('status').value;
+
+            if (currentStatus === newStatus) {
+                e.preventDefault();
+                alert('Trạng thái mới giống với trạng thái hiện tại!');
+                return false;
+            }
+
+            const statusText = {
+                'AVAILABLE': 'Trống',
+                'OCCUPIED': 'Đang Sử Dụng',
+                'UNDER_MAINTENANCE': 'Bảo Trì'
+            };
+
+            if (!confirm(`Bạn có chắc chắn muốn thay đổi trạng thái phòng thành "${statusText[newStatus]}"?`)) {
+                e.preventDefault();
+                return false;
+            }
+        });
+    </script>
+</th:block>
+</body>
+</html>
