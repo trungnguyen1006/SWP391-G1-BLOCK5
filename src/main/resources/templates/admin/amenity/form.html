@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/admin-layout}" lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Thêm/Sửa Tiện Nghi</title>
+</head>
+<body>
+<div layout:fragment="content" class="container mt-4">
+
+    <h2 th:text="${amenity.amenityId == null ? 'Thêm Tiện Nghi' : 'Chỉnh Sửa Tiện Nghi'}"></h2>
+
+
+    <form th:object="${amenity}"
+          th:action="@{${amenity.amenityId == null ? '/admin/amenities/create' : '/admin/amenities/update/' + amenity.amenityId}}"
+          method="post" enctype="multipart/form-data">
+
+
+        <div class="mb-3">
+            <label for="amenityName" class="form-label">Tên Tiện Nghi</label>
+            <input type="text" id="amenityName" th:field="*{amenityName}" class="form-control" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="imageUrl" class="form-label">Ảnh</label>
+            <input type="file"
+                   class="form-control"
+                   id="imageUrl"
+                   name="file"
+                   accept="image/*"
+                   required>
+        </div>
+
+        <div class="mb-3">
+            <label for="description" class="form-label">Mô tả</label>
+            <!-- TinyMCE Editor -->
+            <textarea class="tinymce-editor" id="description" th:field="*{description}">
+            </textarea><!-- End TinyMCE Editor -->
+        </div>
+
+        <button type="submit" class="btn btn-primary"
+                th:text="${amenity.amenityId == null ? 'Lưu' : 'Cập nhật'}"></button>
+        <a th:href="@{/admin/amenities}" class="btn btn-secondary">Quay lại</a>
+    </form>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/reception-layout}">
+<head>
+    <title>Danh Sách Booking</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="content-header mb-4">
+        <h2 class="welcome-text">
+            <i class="bi bi-calendar-check"></i> Quản Lý Booking
+        </h2>
+        <p class="welcome-subtitle">Danh sách booking của khách hàng</p>
+    </div>
+
+    <!-- Bảng danh sách booking -->
+    <div class="card">
+        <div class="card-body">
+            <!-- Form tìm kiếm -->
+            <form th:action="@{/reception/bookings}" method="get" class="mb-4">
+                <div class="row g-3">
+                    <div class="col-md-8">
+                        <div class="input-group">
+                    <span class="input-group-text">
+                        <i class="bi bi-search"></i>
+                    </span>
+                            <input type="text"
+                                   class="form-control"
+                                   name="bookingId"
+                                   th:value="${bookingId}"
+                                   placeholder="Tìm kiếm theo mã booking...">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-search"></i> Tìm kiếm
+                        </button>
+                        <a th:href="@{/reception/bookings}"
+                           class="btn btn-outline-secondary w-100 mt-2"
+                           th:if="${bookingId != null && !bookingId.isEmpty()}">
+                            <i class="bi bi-x-circle"></i> Xóa bộ lọc
+                        </a>
+                    </div>
+                </div>
+            </form>
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                    <tr>
+                        <th>Mã Booking</th>
+                        <th>Khách Hàng</th>
+                        <th>Phòng</th>
+                        <th>Check-in</th>
+                        <th>Check-out</th>
+                        <th>Tổng Tiền</th>
+                        <th>Trạng Thái</th>
+                        <th>Ngày Tạo</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="booking : ${bookings}">
+                        <td><strong th:text="${booking.bookingId}"></strong></td>
+                        <td>
+                            <div th:text="${booking.user != null ? booking.user.username : 'N/A'}"></div>
+                            <small class="text-muted" th:text="${booking.user != null ? booking.user.email : ''}"></small>
+                        </td>
+                        <td th:text="${booking.room != null ? booking.room.roomNumber : 'N/A'}"></td>
+                        <td th:text="${#temporals.format(booking.checkInDate, 'dd/MM/yyyy')}"></td>
+                        <td th:text="${#temporals.format(booking.checkOutDate, 'dd/MM/yyyy')}"></td>
+                        <td th:text="${#numbers.formatDecimal(booking.totalPrice, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'"></td>
+                        <td>
+                            <span th:if="${booking.status.name() == 'PENDING'}" class="badge bg-warning text-dark">Chờ Xác Nhận</span>
+                            <span th:if="${booking.status.name() == 'CONFIRMED'}" class="badge bg-success">Đã Xác Nhận</span>
+                            <span th:if="${booking.status.name() == 'CANCELLED_PERMANENTLY'}" class="badge bg-danger">Đã Hủy</span>
+                        </td>
+                        <td th:text="${#temporals.format(booking.createdAt, 'dd/MM/yyyy HH:mm')}"></td>
+                    </tr>
+                    <tr th:if="${bookings == null || bookings.isEmpty()}">
+                        <td colspan="8" class="text-center text-muted py-4">
+                            <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                            Chưa có booking nào
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <!-- Pagination -->
+            <nav th:if="${totalPages > 1}" aria-label="Page navigation">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                        <a class="page-link" th:href="@{/reception/bookings(page=${currentPage - 1}, bookingId=${bookingId})}">
+                            <i class="bi bi-chevron-left"></i> Trước
+                        </a>
+                    </li>
+
+                    <li class="page-item"
+                        th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+                        th:classappend="${i == currentPage} ? 'active'">
+                        <a class="page-link" th:href="@{/reception/bookings(page=${i}, bookingId=${bookingId})}" th:text="${i + 1}"></a>
+                    </li>
+
+                    <li class="page-item" th:classappend="${currentPage >= totalPages - 1} ? 'disabled'">
+                        <a class="page-link" th:href="@{/reception/bookings(page=${currentPage + 1}, bookingId=${bookingId})}">
+                            Sau <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+
+            <p class="text-center text-muted mt-3" th:if="${totalPages > 0}">
+                Hiển thị trang <strong th:text="${currentPage + 1}"></strong> / <strong th:text="${totalPages}"></strong>
+                (Tổng <strong th:text="${totalItems}"></strong> booking)
+            </p>
+        </div>
+    </div>
+</div>
+
+<style layout:fragment="styles">
+    .content-header {
+        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+        padding: 25px;
+        border-radius: 20px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+    }
+
+    .welcome-text {
+        font-size: 28px;
+        font-weight: 700;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 10px;
+    }
+
+    .welcome-subtitle {
+        color: #64748b;
+        font-size: 16px;
+        margin: 0;
+    }
+
+    .card {
+        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+        border-radius: 20px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        border: none;
+    }
+
+    .table {
+        margin-bottom: 0;
+    }
+
+    .table thead th {
+        border-bottom: 2px solid #e2e8f0;
+        font-weight: 600;
+        color: #475569;
+    }
+
+    .table tbody tr {
+        transition: all 0.3s ease;
+    }
+
+    .table tbody tr:hover {
+        background-color: rgba(102, 126, 234, 0.05);
+        transform: scale(1.01);
+    }
+
+    .badge {
+        padding: 6px 12px;
+        font-weight: 500;
+    }
+
+    .pagination .page-link {
+        border-radius: 8px;
+        margin: 0 3px;
+        border: 1px solid #e2e8f0;
+        color: #667eea;
+    }
+
+    .pagination .page-item.active .page-link {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-color: #667eea;
+    }
+
+    .pagination .page-link:hover {
+        background-color: #f1f5f9;
+    }
+</style>
+</body>
+</html>
