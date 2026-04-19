@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/reception-layout}">
+<head>
+    <title>Dashboard - Lễ Tân</title>
+</head>
+
+<!-- ===== EXTRA CSS ===== -->
+<th:block layout:fragment="extra-css">
+    <style>
+        /* Page header */
+        .page-header { margin-bottom: 24px; }
+        .page-header h1 { font-size: 21px; font-weight: 700; color: #1e293b; }
+        .page-header p  { font-size: 14px; color: #64748b; margin-top: 3px; }
+
+        /* Stat grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 18px;
+            margin-bottom: 26px;
+        }
+
+        @media (max-width: 1100px) { .stats-grid { grid-template-columns: repeat(2,1fr); } }
+        @media (max-width: 560px)  { .stats-grid { grid-template-columns: 1fr; } }
+
+        .stat-card {
+            background: #fff;
+            border-radius: 14px;
+            padding: 20px 22px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.07), 0 4px 14px rgba(0,0,0,0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 22px rgba(0,0,0,0.10);
+        }
+
+        .stat-icon {
+            width: 48px; height: 48px;
+            border-radius: 13px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 20px; color: #fff;
+            flex-shrink: 0;
+        }
+
+        .ic-total    { background: linear-gradient(135deg, #3b82f6, #60a5fa); }
+        .ic-pending  { background: linear-gradient(135deg, #f59e0b, #fbbf24); }
+        .ic-checkin  { background: linear-gradient(135deg, #10b981, #34d399); }
+        .ic-customer { background: linear-gradient(135deg, #8b5cf6, #a78bfa); }
+
+        .stat-body { min-width: 0; }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1e293b;
+            line-height: 1;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #64748b;
+            font-weight: 500;
+            margin-top: 4px;
+        }
+
+        /* Bottom row */
+        .bottom-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 300px;
+            gap: 20px;
+        }
+
+        @media (max-width: 1100px) { .bottom-row { grid-template-columns: 1fr 1fr; } }
+        @media (max-width: 700px)  { .bottom-row { grid-template-columns: 1fr; } }
+
+        /* Card base */
+        .card-box {
+            background: #fff;
+            border-radius: 14px;
+            padding: 22px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.07), 0 4px 14px rgba(0,0,0,0.05);
+        }
+
+        .card-box-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-box-title i { color: #0ea5e9; }
+
+        /* Table */
+        .table-dash {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .table-dash th {
+            padding: 8px 10px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #94a3b8;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .table-dash td {
+            padding: 10px 10px;
+            border-bottom: 1px solid #f8fafc;
+            color: #334155;
+        }
+
+        .table-dash tr:last-child td { border-bottom: none; }
+
+        .table-dash tr:hover td { background: #f8fafc; }
+
+        .empty-msg {
+            text-align: center;
+            padding: 24px;
+            color: #94a3b8;
+            font-size: 13px;
+        }
+
+        /* Status badge */
+        .badge-status {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .bs-confirmed { background: #dbeafe; color: #1d4ed8; }
+        .bs-checkin   { background: #d1fae5; color: #065f46; }
+
+        /* Doughnut */
+        .chart-wrap-doughnut {
+            height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .status-legend {
+            margin-top: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 12px;
+        }
+
+        .legend-dot {
+            width: 9px; height: 9px;
+            border-radius: 50%;
+            margin-right: 7px;
+            flex-shrink: 0;
+        }
+
+        .legend-name {
+            display: flex;
+            align-items: center;
+            color: #475569;
+        }
+
+        .legend-count {
+            font-weight: 600;
+            color: #1e293b;
+        }
+    </style>
+</th:block>
+
+<!-- ===== CONTENT ===== -->
+<div layout:fragment="content">
+
+    <!-- Header -->
+    <div class="page-header">
+        <h1><i class="fas fa-home" style="color:#0ea5e9;margin-right:8px;"></i>Xin chào trở lại!</h1>
+        <p th:text="'Hôm nay: ' + ${today}">Tổng quan công việc hôm nay</p>
+    </div>
+
+    <!-- Stat cards -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon ic-total"><i class="fas fa-calendar-check"></i></div>
+            <div class="stat-body">
+                <div class="stat-value" th:text="${totalBookings ?: 0}">0</div>
+                <div class="stat-label">Tổng đặt phòng</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon ic-pending"><i class="fas fa-clock"></i></div>
+            <div class="stat-body">
+                <div class="stat-value" th:text="${pendingBookings ?: 0}">0</div>
+                <div class="stat-label">Chờ xác nhận</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon ic-checkin"><i class="fas fa-bed"></i></div>
+            <div class="stat-body">
+                <div class="stat-value" th:text="${checkedInBookings ?: 0}">0</div>
+                <div class="stat-label">Đang ở</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon ic-customer"><i class="fas fa-users"></i></div>
+            <div class="stat-body">
+                <div class="stat-value" th:text="${activeCustomers ?: 0}">0</div>
+                <div class="stat-label">Khách hoạt động</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom row: Arrivals | Departures | Doughnut -->
+    <div class="bottom-row">
+
+        <!-- Khách nhận phòng hôm nay -->
+        <div class="card-box">
+            <div class="card-box-title">
+                <i class="fas fa-plane-arrival"></i>
+                Nhận phòng hôm nay
+                <span style="margin-left:auto;background:#dbeafe;color:#1d4ed8;font-size:11px;padding:2px 8px;border-radius:12px;"
+                      th:text="${todayArrivals != null ? todayArrivals.size() : 0}">0</span>
+            </div>
+            <div th:if="${todayArrivals == null or todayArrivals.isEmpty()}" class="empty-msg">
+                <i class="fas fa-inbox" style="font-size:24px;display:block;margin-bottom:6px;"></i>
+                Không có khách nhận phòng hôm nay
+            </div>
+            <table class="table-dash" th:if="${todayArrivals != null and !todayArrivals.isEmpty()}">
+                <thead>
+                <tr>
+                    <th>Booking #</th>
+                    <th>Khách hàng</th>
+                    <th>Phòng</th>
+                    <th>Trạng thái</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="b : ${todayArrivals}">
+                    <td th:text="${b.bookingId}">#</td>
+                    <td th:text="${b.user?.username ?: 'N/A'}">Khách</td>
+                    <td th:text="${b.room?.roomNumber ?: 'N/A'}">101</td>
+                    <td><span class="badge-status bs-confirmed">Đã xác nhận</span></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Khách trả phòng hôm nay -->
+        <div class="card-box">
+            <div class="card-box-title">
+                <i class="fas fa-plane-departure"></i>
+                Trả phòng hôm nay
+                <span style="margin-left:auto;background:#d1fae5;color:#065f46;font-size:11px;padding:2px 8px;border-radius:12px;"
+                      th:text="${todayDepartures != null ? todayDepartures.size() : 0}">0</span>
+            </div>
+            <div th:if="${todayDepartures == null or todayDepartures.isEmpty()}" class="empty-msg">
+                <i class="fas fa-inbox" style="font-size:24px;display:block;margin-bottom:6px;"></i>
+                Không có khách trả phòng hôm nay
+            </div>
+            <table class="table-dash" th:if="${todayDepartures != null and !todayDepartures.isEmpty()}">
+                <thead>
+                <tr>
+                    <th>Booking #</th>
+                    <th>Khách hàng</th>
+                    <th>Phòng</th>
+                    <th>Trạng thái</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="b : ${todayDepartures}">
+                    <td th:text="${b.bookingId}">#</td>
+                    <td th:text="${b.user?.username ?: 'N/A'}">Khách</td>
+                    <td th:text="${b.room?.roomNumber ?: 'N/A'}">101</td>
+                    <td><span class="badge-status bs-checkin">Đang ở</span></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Doughnut: trạng thái booking -->
+        <div class="card-box">
+            <div class="card-box-title">
+                <i class="fas fa-chart-donut"></i>
+                Trạng thái booking
+            </div>
+            <div class="chart-wrap-doughnut">
+                <canvas id="statusChart"></canvas>
+            </div>
+            <div class="status-legend" id="statusLegend"></div>
+        </div>
+
+    </div>
+</div>
+
+<!-- ===== EXTRA JS ===== -->
+<th:block layout:fragment="extra-js">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script th:inline="javascript">
+        (function () {
+            var STATUS_CONFIG = {
+                PENDING:               { label: 'Chờ xác nhận', color: '#f59e0b' },
+                CONFIRMED:             { label: 'Đã xác nhận',  color: '#3b82f6' },
+                CHECKED_IN:            { label: 'Đang ở',       color: '#10b981' },
+                CHECKED_OUT:           { label: 'Đã trả phòng', color: '#8b5cf6' },
+                CANCELLED_PERMANENTLY: { label: 'Đã hủy',       color: '#ef4444' }
+            };
+
+            // Inject Thymeleaf data into JS
+            var countData = {
+                PENDING:               /*[[${countPending ?: 0}]]*/ 0,
+                CONFIRMED:             /*[[${countConfirmed ?: 0}]]*/ 0,
+                CHECKED_IN:            /*[[${countCheckedIn ?: 0}]]*/ 0,
+                CHECKED_OUT:           /*[[${countCheckedOut ?: 0}]]*/ 0,
+                CANCELLED_PERMANENTLY: /*[[${countCancelled ?: 0}]]*/ 0
+            };
+
+            var keys   = Object.keys(countData);
+            var labels = keys.map(function(k) { return (STATUS_CONFIG[k] || {}).label || k; });
+            var values = keys.map(function(k) { return countData[k] || 0; });
+            var colors = keys.map(function(k) { return (STATUS_CONFIG[k] || {}).color || '#94a3b8'; });
+            var total  = values.reduce(function(a,b){return a+b;}, 0);
+
+            new Chart(document.getElementById('statusChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: values,
+                        backgroundColor: colors,
+                        borderWidth: 2,
+                        borderColor: '#fff',
+                        hoverOffset: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '65%',
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(ctx) {
+                                    var pct = total > 0 ? Math.round(ctx.raw / total * 100) : 0;
+                                    return ' ' + ctx.raw + ' (' + pct + '%)';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Build legend
+            var legend = document.getElementById('statusLegend');
+            keys.forEach(function(k) {
+                var cfg = STATUS_CONFIG[k] || { label: k, color: '#94a3b8' };
+                var li  = document.createElement('div');
+                li.className = 'legend-item';
+                li.innerHTML =
+                    '<span class="legend-name">' +
+                    '  <span class="legend-dot" style="background:' + cfg.color + '"></span>' +
+                    cfg.label +
+                    '</span>' +
+                    '<span class="legend-count">' + (countData[k] || 0) + '</span>';
+                legend.appendChild(li);
+            });
+        })();
+    </script>
+</th:block>
+
+</html>
