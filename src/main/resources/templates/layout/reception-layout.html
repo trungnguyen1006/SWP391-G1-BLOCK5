@@ -1,199 +1,294 @@
 <!DOCTYPE html>
-<html lang="vi" xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Receptionist Dashboard</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: #64748b;
-            color: #333;
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+            background: #f1f5f9;
+            color: #1e293b;
             min-height: 100vh;
         }
 
-        .dashboard-container {
-            display: flex;
-            min-height: 100vh;
-        }
-
-        /* Sidebar Styles */
+        /* ===== SIDEBAR ===== */
         .sidebar {
-            width: 300px;
-            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-            padding: 25px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-            border-right: 1px solid rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(10px);
-        }
-
-        .dashboard-title {
-            font-size: 22px;
-            font-weight: 700;
-            background: #64748b;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 35px;
-            padding-bottom: 20px;
-            border-bottom: 2px solid #e2e8f0;
-            text-align: center;
-        }
-
-        .navigation {
+            width: 250px;
+            background: #0f172a;
+            position: fixed;
+            top: 0; left: 0;
+            height: 100vh;
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            z-index: 1000;
+            overflow-y: auto;
+            overflow-x: hidden;
         }
 
-        .nav-item {
+        .sidebar-brand {
+            padding: 24px 20px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.07);
             display: flex;
             align-items: center;
-            padding: 18px 22px;
-            border-radius: 15px;
-            cursor: pointer;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            gap: 12px;
+            flex-shrink: 0;
+        }
+
+        .sidebar-brand-icon {
+            width: 38px; height: 38px;
+            background: linear-gradient(135deg, #0ea5e9, #6366f1);
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px; color: #fff;
+            flex-shrink: 0;
+        }
+
+        .sidebar-brand-text {
+            font-size: 15px;
+            font-weight: 700;
+            color: #f8fafc;
+            line-height: 1.2;
+        }
+
+        .sidebar-brand-sub {
+            font-size: 11px;
             color: #64748b;
-            font-weight: 500;
-            position: relative;
-            overflow: hidden;
-            border: 1px solid transparent;
+            font-weight: 400;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: 16px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .nav-section-label {
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #334155;
+            padding: 10px 8px 4px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 11px 14px;
+            border-radius: 9px;
+            color: #94a3b8;
             text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s ease;
         }
 
-        .nav-item::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: #64748b;
-            transition: left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            z-index: -1;
-            border-radius: 15px;
-        }
-
-        .nav-item:hover::before {
-            left: 0;
-        }
-
-        .nav-item:hover {
-            color: #ffffff;
-            transform: translateX(8px);
-            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
-        }
-
-        .nav-item.active {
-            background: #64748b;
-            color: #ffffff;
-            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-        }
-
-        .nav-item.active::before {
-            left: 0;
-        }
-
-        .nav-item i {
-            font-size: 18px;
-            margin-right: 15px;
-            width: 24px;
-            text-align: center;
-            z-index: 1;
-        }
-
-        .nav-item span {
+        .nav-link i {
             font-size: 16px;
-            z-index: 1;
+            width: 20px;
+            text-align: center;
+            flex-shrink: 0;
         }
 
-        /* Main Content Area */
+        .nav-link:hover {
+            background: rgba(255,255,255,0.07);
+            color: #f1f5f9;
+        }
+
+        .nav-link.active {
+            background: linear-gradient(135deg, #0ea5e9, #6366f1);
+            color: #fff;
+            box-shadow: 0 4px 14px rgba(14,165,233,0.30);
+        }
+
+        .sidebar-footer {
+            padding: 14px 12px;
+            border-top: 1px solid rgba(255,255,255,0.07);
+            flex-shrink: 0;
+        }
+
+        .btn-logout {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            padding: 10px 14px;
+            background: rgba(239,68,68,0.10);
+            border: 1px solid rgba(239,68,68,0.18);
+            border-radius: 9px;
+            color: #f87171;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+
+        .btn-logout:hover {
+            background: rgba(239,68,68,0.20);
+            color: #fca5a5;
+        }
+
+        /* ===== MAIN CONTENT ===== */
+        .main-wrapper {
+            margin-left: 250px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .topbar {
+            background: #fff;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 0 28px;
+            height: 62px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .topbar-title {
+            font-size: 17px;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-badge {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 20px;
+            padding: 6px 14px;
+            font-size: 13px;
+            font-weight: 500;
+            color: #475569;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+
         .main-content {
             flex: 1;
-            padding: 30px;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 0 20px 20px 0;
-            margin: 20px 20px 20px 0;
-            box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.1);
+            padding: 26px 28px;
         }
 
-        /* Responsive Design */
+        /* ===== RESPONSIVE ===== */
         @media (max-width: 768px) {
-            .dashboard-container {
-                flex-direction: column;
-            }
-
-            .sidebar {
-                width: 100%;
-                padding: 20px;
-                border-right: none;
-                border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-            }
-
-            .navigation {
-                flex-direction: row;
-                overflow-x: auto;
-            }
-
-            .main-content {
-                margin: 0;
-                border-radius: 0;
-            }
+            .sidebar { transform: translateX(-100%); }
+            .main-wrapper { margin-left: 0; }
+            .topbar { padding: 0 16px; }
+            .main-content { padding: 16px; }
         }
     </style>
+    <th:block layout:fragment="extra-css"></th:block>
 </head>
 <body>
-<div class="dashboard-container">
-    <!-- Sidebar -->
-    <aside class="sidebar">
-        <h1 class="dashboard-title">Receptionist Dashboard</h1>
 
-        <nav class="navigation">
-            <a th:href="@{/reception}"
-               class="nav-item">
-                <i class="fas fa-home"></i>
-                <span>Dashboard</span>
-            </a>
+<!-- Sidebar -->
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+        <div class="sidebar-brand-icon">
+            <i class="fas fa-concierge-bell"></i>
+        </div>
+        <div>
+            <div class="sidebar-brand-text">Lễ Tân</div>
+            <div class="sidebar-brand-sub">Receptionist Panel</div>
+        </div>
+    </div>
 
-            <a th:href="@{/reception/bookings}"
-               class="nav-item">
-                <i class="fas fa-list"></i>
-                <span>List Customer Booking</span>
-            </a>
+    <nav class="sidebar-nav">
+        <div class="nav-section-label">Tổng quan</div>
+        <a th:href="@{/reception}" class="nav-link" id="nav-home">
+            <i class="fas fa-chart-pie"></i>
+            <span>Dashboard</span>
+        </a>
 
-            <a th:href="@{/reception/rooms}"
-               class="nav-item">
-                <i class="fas fa-users"></i>
-                <span>Update Status Room</span>
-            </a>
+        <div class="nav-section-label">Quản lý</div>
+        <a th:href="@{/reception/bookings}" class="nav-link" id="nav-bookings">
+            <i class="fas fa-calendar-alt"></i>
+            <span>Danh sách đặt phòng</span>
+        </a>
+        <a th:href="@{/reception/rooms}" class="nav-link" id="nav-rooms">
+            <i class="fas fa-door-open"></i>
+            <span>Cập nhật trạng thái phòng</span>
+        </a>
+    </nav>
 
-        </nav>
-    </aside>
+    <div class="sidebar-footer">
+        <form th:action="@{/logout}" method="post">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <button type="submit" class="btn-logout">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Đăng xuất</span>
+            </button>
+        </form>
+    </div>
+</aside>
 
-    <!-- Main Content Area -->
+<!-- Main Wrapper -->
+<div class="main-wrapper">
+    <header class="topbar">
+        <div class="topbar-title">Receptionist Dashboard</div>
+        <div class="topbar-right">
+            <div class="user-badge">
+                <i class="fas fa-user-circle"></i>
+                <span sec:authentication="name">Lễ tân</span>
+            </div>
+        </div>
+    </header>
+
     <main class="main-content">
         <div layout:fragment="content">
-            <!-- Content từ page con sẽ được insert vào đây -->
+            <!-- Nội dung trang con -->
         </div>
     </main>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script layout:fragment="scripts">
-    <!-- Scripts từ page con -->
+<th:block layout:fragment="extra-js"></th:block>
+
+<script>
+    (function () {
+        var path = window.location.pathname;
+        var map = {
+            'nav-home':     ['/reception'],
+            'nav-bookings': ['/reception/bookings'],
+            'nav-rooms':    ['/reception/rooms']
+        };
+        Object.entries(map).forEach(function ([id, paths]) {
+            var el = document.getElementById(id);
+            if (!el) return;
+            var matched = paths.some(function (p) {
+                return p === '/reception' ? path === '/reception' : path.startsWith(p);
+            });
+            if (matched) el.classList.add('active');
+        });
+    })();
 </script>
 </body>
 </html>
