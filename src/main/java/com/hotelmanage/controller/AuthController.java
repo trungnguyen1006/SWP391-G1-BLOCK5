@@ -9,6 +9,8 @@ import com.hotelmanage.repository.booking.BookingRepository;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +22,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 import java.util.Optional;
@@ -48,7 +51,7 @@ public class AuthController {
     @Transactional
     public String doRegister(@Valid @ModelAttribute("registerRequest") RegisterRequest req,
                              BindingResult bindingResult,
-                             Model model) {
+                             RedirectAttributes redirectAttributes) {
 
         // Kiểm tra username đã tồn tại
         if (userRepository.existsByUsername(req.getUsername())) {
@@ -72,7 +75,7 @@ public class AuthController {
                 // Nâng cấp GUEST lên CUSTOMER
                 upgradeGuestToCustomer(existingUser, req);
 
-                model.addAttribute("success", "Tài khoản của bạn đã được nâng cấp thành công! Lịch sử đặt phòng đã được liên kết.");
+                redirectAttributes.addFlashAttribute("success", "Tài khoản của bạn đã được nâng cấp thành công! Lịch sử đặt phòng đã được liên kết.");
                 return "redirect:/login?upgraded";
             } else {
                 // Nếu là CUSTOMER/ADMIN/RECEPTIONIST -> báo lỗi
@@ -130,15 +133,20 @@ public class AuthController {
     @Data
     public static class RegisterRequest {
         @NotBlank(message = "Tên đăng nhập không được để trống")
+        @Pattern(regexp = "^[a-zA-Z0-9_]+$", message = "Tên đăng nhập chỉ được chứa chữ, số và dấu gạch dưới")
+        @Size(min = 3, max = 20, message = "Tên đăng nhập phải từ 3 đến 20 ký tự")
         private String username;
 
         @NotBlank(message = "Mật khẩu không được để trống")
+        @Size(min = 6, max = 50, message = "Mật khẩu phải từ 6 đến 50 ký tự")
+        @Pattern(regexp = "^\\S+$", message = "Mật khẩu không được chứa khoảng trắng")
         private String password;
 
         @NotBlank(message = "Email không được để trống")
         @Email(message = "Email không đúng định dạng")
         private String email;
 
+        @Pattern(regexp = "^$|^(\\+84|0)[0-9]{9}$", message = "Số điện thoại không hợp lệ")
         private String phone;
         private String address;
     }
