@@ -27,16 +27,16 @@ public class HomeController {
         return "users/homepage";
     }
 
-    @GetMapping({"/admin", "/reception", "/home"})
+    @GetMapping({"/admin", "/home"})
     public String roleLanding(Authentication authentication) {
-        if (authentication == null) return "index";
+        if (authentication == null) return "redirect:/";
         for (GrantedAuthority a : authentication.getAuthorities()) {
             String role = a.getAuthority();
             if ("ROLE_ADMIN".equals(role)) return "admin/admin-dashboard";
-            if ("ROLE_RECEPTIONIST".equals(role)) return "receptionist/receptionist-dashboard";
+            if ("ROLE_RECEPTIONIST".equals(role)) return "redirect:/reception";
             if ("ROLE_CUSTOMER".equals(role)) return "redirect:/";
         }
 
-        return "index";
+        return "redirect:/";
     }
 }
