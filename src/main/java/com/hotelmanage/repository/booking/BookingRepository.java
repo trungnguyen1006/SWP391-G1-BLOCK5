@@ -50,5 +50,16 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     BigDecimal calculateRevenueByDateRange(@Param("startDate") LocalDateTime startDate,
                                            @Param("endDate") LocalDateTime endDate);
 
+    @Query("SELECT COUNT(b) FROM Booking b WHERE b.status = :status")
+    Long countByStatus(@Param("status") BookingStatus status);
+
+    List<Booking> findByCheckInDateAndStatus(LocalDate checkInDate, BookingStatus status);
+
+    List<Booking> findByCheckOutDateAndStatus(LocalDate checkOutDate, BookingStatus status);
+
+    Optional<Booking> findFirstByRoomRoomIdAndStatus(Integer roomId, BookingStatus status);
+
+    List<Booking> findTop5ByOrderByCreatedAtDesc();
+
 
 }

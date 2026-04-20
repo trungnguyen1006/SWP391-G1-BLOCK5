@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Danh sách Blog - Hoi An Hotel</title>
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+    <style>
+        body {
+            background: #f5f5f5;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        section {
+            margin-top: 80px;
+            padding: 60px 100px;
+            flex: 1;
+        }
+
+        section h1 {
+            font-size: 2.5rem;
+            color: #222;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 30px;
+        }
+
+        .card {
+            background: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card img {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+        }
+
+        .card-body {
+            padding: 20px;
+        }
+
+        .card-body h3 {
+            font-size: 1.3rem;
+            color: #222;
+            margin-bottom: 10px;
+        }
+
+        .excerpt {
+            color: #666;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .card-actions {
+            margin-top: 15px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 8px 20px;
+            background: #f9c74f;
+            color: #000;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+
+        .btn:hover {
+            background: #f8b830;
+        }
+
+        @media (max-width: 768px) {
+            section {
+                padding: 40px 20px;
+            }
+
+            section h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<div th:replace="~{fragments/header :: header}"></div>
+
+<section>
+    <h1>Danh sách Blog</h1>
+    <div class="grid" th:if="${!#lists.isEmpty(blogs)}">
+        <div class="card" th:each="b : ${blogs}">
+            <img th:src="${b.imageUrl ?: '/images/placeholder-blog.svg'}"
+                 th:alt="${b.title}"
+                 onerror="this.onerror=null; this.src='/images/placeholder-blog.svg';" />
+            <div class="card-body">
+                <h3 th:text="${b.title}">Tiêu đề</h3>
+                <p class="excerpt" th:text="${b.excerpt ?: 'Đang cập nhật'}">Đoạn giới thiệu</p>
+                <div class="card-actions">
+                    <a class="btn" th:href="@{/blogs/{id}(id=${b.id})}">Xem chi tiết</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div th:if="${#lists.isEmpty(blogs)}" style="text-align: center; color: #666; font-size: 1.2rem;">
+        Chưa có bài viết.
+    </div>
+</section>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

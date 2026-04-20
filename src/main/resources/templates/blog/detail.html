@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Blog Detail</title>
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+    <style>
+        .container {
+            max-width: 1200px;
+            margin: 120px auto 40px;
+            padding: 0 20px;
+        }
+
+        .blog-detail {
+            background: #fff;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .hero-image {
+            width: 100%;
+            max-height: 500px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+
+        .blog-detail h1 {
+            font-size: 2.5rem;
+            color: #222;
+            margin-bottom: 20px;
+        }
+
+        .content {
+            line-height: 1.8;
+            color: #444;
+            font-size: 1.1rem;
+        }
+
+        .form-note {
+            margin-top: 30px;
+        }
+
+        .form-note a {
+            color: #f9c74f;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .form-note a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+<div th:replace="~{fragments/header :: header}"></div>
+
+<section class="container">
+    <article class="blog-detail">
+        <img th:if="${blog != null && blog.imageUrl != null}"
+             th:src="${blog.imageUrl}"
+             th:alt="${blog.title}"
+             class="hero-image"
+             onerror="this.onerror=null; this.src='/images/placeholder-blog.svg';" />
+
+        <h1 th:text="${blog != null && blog.title != null} ? ${blog.title} : 'Bài viết không tồn tại'">Tiêu đề</h1>
+
+        <div class="content" th:if="${blog != null && blog.content != null}"
+             th:utext="${blog.content}">
+        </div>
+
+        <div th:if="${blog == null || blog.content == null}"
+             style="text-align: center; color: #666; padding: 20px;">
+            Bài viết không tồn tại hoặc đã bị xóa.
+        </div>
+
+        <p class="form-note">
+            <a th:href="@{/blogs}">← Quay lại danh sách</a>
+        </p>
+    </article>
+</section>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

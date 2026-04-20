@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.GrantedAuthority;
@@ -32,6 +33,7 @@ import org.springframework.security.core.Authentication;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity(prePostEnabled = true)
 @RequiredArgsConstructor
 public class SecurityConfig {
 
@@ -50,7 +52,7 @@ public class SecurityConfig {
                         // Admin only
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         // Receptionist
-                        .requestMatchers("/reception/**").hasAnyRole("RECEPTIONIST")
+                        .requestMatchers("/reception/**").hasAnyRole("ADMIN", "RECEPTIONIST")
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form

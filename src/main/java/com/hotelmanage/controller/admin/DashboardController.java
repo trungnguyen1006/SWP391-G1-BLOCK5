@@ -40,5 +40,18 @@ public class DashboardController {
         return ResponseEntity.ok(stats);
     }
 
-
+    @GetMapping("/chart/monthly-revenue")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Map<String, Object>> getMonthlyRevenueChart() {
+        log.info("Getting monthly revenue chart data");
+        return ResponseEntity.ok(dashboardService.getLast6MonthsRevenue());
     }
+
+    @GetMapping("/chart/booking-status")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Map<String, Long>> getBookingStatusChart() {
+        log.info("Getting booking status chart data");
+        return ResponseEntity.ok(dashboardService.getBookingStatusBreakdown());
+    }
+
+}

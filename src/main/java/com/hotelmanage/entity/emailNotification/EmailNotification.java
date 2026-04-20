@@ -4,10 +4,10 @@ import com.hotelmanage.entity.Enum.NotificationStatus;
 import com.hotelmanage.entity.User;
 import com.hotelmanage.entity.booking.Booking;
 import jakarta.persistence.*;
-import lombok.*;
-import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDateTime;
 
