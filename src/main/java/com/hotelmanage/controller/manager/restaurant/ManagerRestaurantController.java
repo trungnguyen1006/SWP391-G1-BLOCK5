@@ -1,8 +1,4 @@
-package com.hotelmanage.controller.admin.restaurant;
-
-
-
-
+package com.hotelmanage.controller.manager.restaurant;
 import com.hotelmanage.entity.restaurant.Restaurant;
 import com.hotelmanage.repository.restaurant.RestaurantRepository;
 import com.hotelmanage.service.CloudinaryService;
@@ -19,8 +15,8 @@ import java.util.Optional;
 
 @Controller
 @RequiredArgsConstructor
-@RequestMapping("/admin/restaurants")
-public class AdminRestaurantController {
+@RequestMapping("/manager/restaurants")
+public class ManagerRestaurantController {
 
     private final RestaurantRepository restaurantRepository;
     private final CloudinaryService cloudinaryService;
@@ -36,13 +32,13 @@ public class AdminRestaurantController {
                 : restaurantRepository.findByNameContainingIgnoreCase(q, pageable);
         model.addAttribute("page", restaurants);
         model.addAttribute("q", q);
-        return "admin/restaurant/list";
+        return "manager/restaurant/list";
     }
 
     @GetMapping("/create")
     public String createForm(Model model) {
         model.addAttribute("restaurant", new Restaurant());
-        return "admin/restaurant/form";
+        return "manager/restaurant/form";
     }
 
     @PostMapping
@@ -55,21 +51,21 @@ public class AdminRestaurantController {
             }
         } catch (Exception ignored) {}
         restaurantRepository.save(r);
-        return "redirect:/admin/restaurants";
+        return "redirect:/manager/restaurants";
     }
 
     @GetMapping("/{id}/view")
     public String view(@PathVariable Long id, Model model) {
         Optional<Restaurant> r = restaurantRepository.findById(id);
         model.addAttribute("restaurant", r.orElse(null));
-        return "admin/restaurant/view";
+        return "manager/restaurant/view";
     }
 
     @GetMapping("/{id}/edit")
     public String editForm(@PathVariable Long id, Model model) {
         Optional<Restaurant> r = restaurantRepository.findById(id);
         model.addAttribute("restaurant", r.orElseGet(Restaurant::new));
-        return "admin/restaurant/form";
+        return "manager/restaurant/form";
     }
 
     @PostMapping("/{id}")
@@ -91,14 +87,14 @@ public class AdminRestaurantController {
                 }
             } catch (Exception ignored) {}
             restaurantRepository.save(r);
-            return "redirect:/admin/restaurants";
-        }).orElse("redirect:/admin/restaurants");
+            return "redirect:/manager/restaurants";
+        }).orElse("redirect:/manager/restaurants");
     }
 
     @PostMapping("/{id}/delete")
     public String delete(@PathVariable Long id) {
         restaurantRepository.deleteById(id);
-        return "redirect:/admin/restaurants";
+        return "redirect:/manager/restaurants";
     }
 }
 

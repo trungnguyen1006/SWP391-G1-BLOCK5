@@ -1,4 +1,4 @@
-package com.hotelmanage.controller.admin;
+package com.hotelmanage.controller.manager;
 
 import com.hotelmanage.entity.blog.Blog;
 import com.hotelmanage.repository.blog.BlogRepository;
@@ -21,9 +21,9 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 
 @Controller
-@RequestMapping("/admin/blogs")
+@RequestMapping("/manager/blogs")
 @RequiredArgsConstructor
-public class AdminBlogController {
+public class ManagerBlogController {
 
     private final BlogRepository blogRepository;
     private final CloudinaryService cloudinaryService;
@@ -45,13 +45,13 @@ public class AdminBlogController {
         model.addAttribute("currentPage", page);
         model.addAttribute("totalPages", blogPage.getTotalPages());
         model.addAttribute("q", query);
-        return "admin/blog/list";
+        return "manager/blog/list";
     }
 
     @GetMapping("/create")
     public String createForm(Model model) {
         model.addAttribute("blog", new Blog());
-        return "admin/blog/form";
+        return "manager/blog/form";
     }
 
     @PostMapping
@@ -65,7 +65,7 @@ public class AdminBlogController {
             blog.setExcerpt(form.getExcerpt());
             blog.setContent(form.getContent());
             model.addAttribute("blog", blog);
-            return "admin/blog/form";
+            return "manager/blog/form";
         }
 
         Blog blog = new Blog();
@@ -80,32 +80,32 @@ public class AdminBlogController {
             } catch (IOException e) {
                 model.addAttribute("blog", blog);
                 model.addAttribute("error", "Lỗi upload ảnh: " + e.getMessage());
-                return "admin/blog/form";
+                return "manager/blog/form";
             }
         }
 
         blogRepository.save(blog);
-        return "redirect:/admin/blogs?success";
+        return "redirect:/manager/blogs?success";
     }
 
     @GetMapping("/{id}/view")
     public String view(@PathVariable Long id, Model model) {
         Blog blog = blogRepository.findById(id).orElse(null);
         if (blog == null) {
-            return "redirect:/admin/blogs?notFound";
+            return "redirect:/manager/blogs?notFound";
         }
         model.addAttribute("blog", blog);
-        return "admin/blog/view";
+        return "manager/blog/view";
     }
 
     @GetMapping("/{id}")
     public String editForm(@PathVariable Long id, Model model) {
         Blog blog = blogRepository.findById(id).orElse(null);
         if (blog == null) {
-            return "redirect:/admin/blogs?notFound";
+            return "redirect:/manager/blogs?notFound";
         }
         model.addAttribute("blog", blog);
-        return "admin/blog/form";
+        return "manager/blog/form";
     }
 
     @PostMapping("/{id}")
@@ -116,7 +116,7 @@ public class AdminBlogController {
                          Model model) {
         Blog blog = blogRepository.findById(id).orElse(null);
         if (blog == null) {
-            return "redirect:/admin/blogs?notFound";
+            return "redirect:/manager/blogs?notFound";
         }
 
         if (bindingResult.hasErrors()) {
@@ -124,7 +124,7 @@ public class AdminBlogController {
             blog.setExcerpt(form.getExcerpt());
             blog.setContent(form.getContent());
             model.addAttribute("blog", blog);
-            return "admin/blog/form";
+            return "manager/blog/form";
         }
 
         blog.setTitle(form.getTitle());
@@ -139,18 +139,18 @@ public class AdminBlogController {
             } catch (IOException e) {
                 model.addAttribute("blog", blog);
                 model.addAttribute("error", "Lỗi upload ảnh: " + e.getMessage());
-                return "admin/blog/form";
+                return "manager/blog/form";
             }
         }
 
         blogRepository.save(blog);
-        return "redirect:/admin/blogs?updated";
+        return "redirect:/manager/blogs?updated";
     }
 
     @PostMapping("/{id}/delete")
     public String delete(@PathVariable Long id) {
         blogRepository.deleteById(id);
-        return "redirect:/admin/blogs?deleted";
+        return "redirect:/manager/blogs?deleted";
     }
 
     @Data

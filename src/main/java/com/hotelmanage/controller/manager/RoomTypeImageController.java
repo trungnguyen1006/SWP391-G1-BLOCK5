@@ -1,4 +1,4 @@
-package com.hotelmanage.controller.admin;
+package com.hotelmanage.controller.manager;
 
 import com.hotelmanage.entity.room.RoomType;
 import com.hotelmanage.entity.room.RoomTypeImage;
@@ -14,7 +14,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.util.List;
 
 @Controller
-@RequestMapping("/admin/room-types")
+@RequestMapping("/manager/room-types")
 @RequiredArgsConstructor
 public class RoomTypeImageController {
 
@@ -26,7 +26,7 @@ public class RoomTypeImageController {
         RoomType roomType = roomTypeService.findById(roomTypeId);
         model.addAttribute("roomType", roomType);
         model.addAttribute("images", roomType.getImages());
-        return "admin/room-type-images";
+        return "manager/room-type-images";
     }
 
     @PostMapping("/{roomTypeId}/images/upload")
@@ -45,7 +45,7 @@ public class RoomTypeImageController {
                     "Lỗi khi upload ảnh: " + e.getMessage());
         }
 
-        return "redirect:/admin/room-types/" + roomTypeId + "/images";
+        return "redirect:/manager/room-types/" + roomTypeId + "/images";
     }
 
     @PostMapping("/{roomTypeId}/images/{imageId}/set-primary")
@@ -59,7 +59,7 @@ public class RoomTypeImageController {
             redirectAttributes.addFlashAttribute("error", "Lỗi: " + e.getMessage());
         }
 
-        return "redirect:/admin/room-types/" + roomTypeId + "/images";
+        return "redirect:/manager/room-types/" + roomTypeId + "/images";
     }
 
     @PostMapping("/{roomTypeId}/images/{imageId}/delete")
@@ -73,6 +73,6 @@ public class RoomTypeImageController {
             redirectAttributes.addFlashAttribute("error", "Lỗi: " + e.getMessage());
         }
 
-        return "redirect:/admin/room-types/" + roomTypeId + "/images";
+        return "redirect:/manager/room-types/" + roomTypeId + "/images";
     }
 }
