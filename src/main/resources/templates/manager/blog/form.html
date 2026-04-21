@@ -148,7 +148,7 @@
             <span th:text="${error}">Lỗi</span>
         </div>
 
-        <form th:action="${blog.id != null ? '/admin/blogs/' + blog.id : '/admin/blogs'}"
+        <form th:action="${blog.id != null ? '/manager/blogs/' + blog.id : '/manager/blogs'}"
               method="post"
               enctype="multipart/form-data"
               class="form">
@@ -179,12 +179,33 @@
             </div>
 
             <label>Nội dung <span style="color:red;">*</span></label>
-            <!-- TinyMCE Editor -->
-            <label for="description"></label><textarea class="tinymce-editor" id="description" th:field="*{blog.content}">
-            </textarea><!-- End TinyMCE Editor -->
+            <div class="editor-container">
+                <div class="editor-pane">
+                    <div style="margin-bottom:8px;font-weight:500;color:var(--ink);">
+                        <i class="fa-solid fa-code"></i> HTML Editor
+                    </div>
+                    <textarea id="htmlEditor"
+                              name="content"
+                              th:text="${blog?.content}"
+                              placeholder="Nhập nội dung HTML của blog..."
+                              style="width:100%;min-height:500px;font-family:monospace;font-size:14px;padding:12px;border:1px solid #d9d4ca;border-radius:10px;resize:vertical;"
+                              oninput="updatePreview()"></textarea>
+                </div>
+                <div class="preview-pane">
+                    <div style="margin-bottom:8px;font-weight:500;color:var(--ink);">
+                        <i class="fa-solid fa-eye"></i> Preview
+                    </div>
+                    <div id="contentPreview" class="content-preview">
+                        <div th:if="${blog?.content}" th:utext="${blog.content}"></div>
+                        <div th:unless="${blog?.content}" style="color:#999;text-align:center;padding:40px 20px;">
+                            Nhập HTML ở bên trái để xem preview
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             <div class="modal-actions">
-                <a class="btn" th:href="@{/admin/blogs}">Hủy</a>
+                <a class="btn" th:href="@{/manager/blogs}">Hủy</a>
                 <button class="btn primary" type="submit">Lưu</button>
             </div>
         </form>

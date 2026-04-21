@@ -1,4 +1,4 @@
-package com.hotelmanage.controller.admin;
+package com.hotelmanage.controller.manager;
 
 import com.hotelmanage.entity.Enum.FeedbackCategory;
 import com.hotelmanage.entity.feedback.Feedback;
@@ -13,9 +13,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import java.util.List;
 
 @Controller
-@RequestMapping("/admin/feedbacks")
+@RequestMapping("/manager/feedbacks")
 @RequiredArgsConstructor
-public class FeedbackAdminController {
+public class FeedbackManagerController {
 
     private final FeedbackService feedbackService;
 
@@ -30,7 +30,7 @@ public class FeedbackAdminController {
         model.addAttribute("selectedCategory", category);
         model.addAttribute("categories", FeedbackCategory.values());
         model.addAttribute("pageTitle", "Quản lý góp ý");
-        return "admin/feedback/list";
+        return "manager/feedback/list";
     }
 }
 
