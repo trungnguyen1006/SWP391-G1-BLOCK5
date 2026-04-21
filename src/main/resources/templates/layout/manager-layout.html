@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard</title>
+    <title>Manager Dashboard</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -130,21 +130,63 @@
     <!-- Sidebar Navigation -->
     <nav class="sidebar">
         <div class="sidebar-header">
-            <h2>Admin Dashboard</h2>
+            <h2>Manager Dashboard</h2>
         </div>
 
         <ul class="nav-menu">
             <li class="nav-item">
-                <a href="/admin" class="nav-link">
+                <a href="/manager" class="nav-link">
                     <i class="fas fa-home"></i>
                     <span>Dashboard</span>
                 </a>
             </li>
 
             <li class="nav-item">
-                <a href="/admin/users" class="nav-link">
-                    <i class="fas fa-users"></i>
-                    <span>Manage User account</span>
+                <a href="/manager/room-types" class="nav-link">
+                    <i class="fas fa-th-list"></i>
+                    <span>Manage room type</span>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a href="/manager/rooms" class="nav-link">
+                    <i class="fas fa-door-open"></i>
+                    <span>Manage room</span>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a href="/manager/amenities" class="nav-link">
+                    <i class="fas fa-bed"></i>
+                    <span>Manage Amenity</span>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a href="/manager/blogs" class="nav-link">
+                    <i class="fas fa-blog"></i>
+                    <span>Manage blog</span>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a href="/manager/feedbacks" class="nav-link">
+                    <i class="fas fa-comment"></i>
+                    <span>Manage feedback</span>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a href="/manager/promotions" class="nav-link">
+                    <i class="fas fa-tags"></i>
+                    <span>Manage promotion</span>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a href="/manager/restaurants" class="nav-link">
+                    <i class="fas fa-utensils"></i>
+                    <span>Manage restaurant</span>
                 </a>
             </li>
 
@@ -156,6 +198,7 @@
                     <span>Logout</span>
                 </a>
             </li>
+
         </ul>
 
 
