@@ -1,0 +1,23 @@
+package com.hotelmanage.repository.payment;
+
+import com.hotelmanage.entity.Enum.PaymentStatus;
+import com.hotelmanage.entity.booking.Booking;
+import com.hotelmanage.entity.payment.Payment;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+
+@Repository
+public interface PaymentRepository extends JpaRepository<Payment, Long> {
+
+    @Query("SELECT p FROM Payment p WHERE p.booking = :booking ORDER BY p.paymentDate DESC")
+    Optional<Payment> findLatestByBooking(@Param("booking") Booking booking);
+
+
+}
+
