@@ -1,5 +1,6 @@
 package com.hotelmanage.controller.restaurant;
 
+import com.hotelmanage.entity.Enum.UserRole;
 import com.hotelmanage.entity.User;
 import com.hotelmanage.repository.UserRepository;
 import com.hotelmanage.service.CloudinaryService;
@@ -9,26 +10,23 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.Optional;
 
 @Controller
 @RequiredArgsConstructor
+@Slf4j
 public class ProfileController {
-
-    private static final String EMAIL_REGEX = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$";
-    private static final String PHONE_REGEX = "^(\\+84|0)[0-9]{9}$";
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -40,22 +38,16 @@ public class ProfileController {
         if (userOpt.isEmpty()) {
             return "redirect:/login";
         }
-        User user = userOpt.get();
-        model.addAttribute("user", user);
+        model.addAttribute("user", userOpt.get());
         model.addAttribute("changePasswordForm", new ChangePasswordForm());
         return "auth/profile";
     }
 
     @PostMapping("/profile/avatar")
-    public String uploadAvatar(@RequestParam("avatar") MultipartFile avatarFile,
-                               Model model) {
+    public String uploadAvatar(@RequestParam("avatar") MultipartFile avatarFile) {
         Optional<User> userOpt = getCurrentUser();
-        if (userOpt.isEmpty()) {
-            return "redirect:/login";
-        }
-        if (avatarFile == null || avatarFile.isEmpty()) {
-            return "redirect:/profile?avatarError";
-        }
+        if (userOpt.isEmpty()) return "redirect:/login";
+        if (avatarFile == null || avatarFile.isEmpty()) return "redirect:/profile?avatarError";
         try {
             String url = cloudinaryService.uploadImage(avatarFile, "avatars");
             if (url != null) {
@@ -75,19 +67,23 @@ public class ProfileController {
                                  BindingResult bindingResult,
                                  Model model) {
         Optional<User> userOpt = getCurrentUser();
-        User user = userOpt.orElse(null);
         if (userOpt.isEmpty()) {
-            bindingResult.reject("auth.required", "Bạn cần đăng nhập");
-        } else {
-            if (form.getOldPassword() == null || !passwordEncoder.matches(form.getOldPassword(), user.getPassword())) {
-                bindingResult.rejectValue("oldPassword", "password.invalid", "Mật khẩu hiện tại không đúng");
-            }
-            if (form.getPassword() != null && passwordEncoder.matches(form.getPassword(), user.getPassword())) {
-                bindingResult.rejectValue("password", "password.same_as_old", "Mật khẩu mới không được trùng mật khẩu cũ");
-            }
-            if (form.getPassword() != null && !form.getPassword().equals(form.getConfirmPassword())) {
-                bindingResult.rejectValue("confirmPassword", "password.mismatch", "Mật khẩu không khớp");
-            }
+            return "redirect:/login";
+        }
+
+        User user = userOpt.get();
+
+        if (!passwordEncoder.matches(form.getOldPassword(), user.getPassword())) {
+            bindingResult.rejectValue("oldPassword", "password.invalid", "Mật khẩu hiện tại không đúng");
+        }
+
+        if (!bindingResult.hasFieldErrors("oldPassword") &&
+                passwordEncoder.matches(form.getPassword(), user.getPassword())) {
+            bindingResult.rejectValue("password", "password.same", "Mật khẩu mới không được trùng mật khẩu cũ");
+        }
+
+        if (!form.getPassword().equals(form.getConfirmPassword())) {
+            bindingResult.rejectValue("confirmPassword", "password.mismatch", "Mật khẩu không khớp");
         }
 
         if (bindingResult.hasErrors()) {
@@ -104,44 +100,61 @@ public class ProfileController {
     public String updateProfile(@RequestParam(value = "email", required = false) String email,
                                 @RequestParam(value = "phone", required = false) String phone,
                                 @RequestParam(value = "address", required = false) String address,
-                                @RequestParam(value = "avatar", required = false) MultipartFile avatarFile) {
+                                @RequestParam(value = "avatar", required = false) MultipartFile avatarFile,
+                                RedirectAttributes redirectAttributes) {
         Optional<User> userOpt = getCurrentUser();
-        if (userOpt.isEmpty()) {
-            return "redirect:/login";
-        }
+        if (userOpt.isEmpty()) return "redirect:/login";
+
         User user = userOpt.get();
-        // Update email if provided and not taken by others
+
+        // Validate và update email
         if (email != null && !email.isBlank()) {
-            if (!email.matches(EMAIL_REGEX)) {
-                return "redirect:/profile?updateError";
+            if (!email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$")) {
+                redirectAttributes.addFlashAttribute("updateError", "Email không đúng định dạng");
+                return "redirect:/profile";
             }
             var existed = userRepository.findByEmail(email);
             if (existed.isPresent() && !existed.get().getId().equals(user.getId())) {
-                return "redirect:/profile?updateError";
+                redirectAttributes.addFlashAttribute("updateError", "Email đã được sử dụng");
+                return "redirect:/profile";
             }
             user.setEmail(email);
         }
+
+        // Validate và update phone
         if (phone != null && !phone.isBlank()) {
-            if (!phone.matches(PHONE_REGEX)) {
-                return "redirect:/profile?updateError";
+            if (!phone.matches("^(\\+84|0)[0-9]{9}$")) {
+                redirectAttributes.addFlashAttribute("updateError",
+                        "Số điện thoại không hợp lệ (VD: 0912345678)");
+                return "redirect:/profile";
+            }
+            if (userRepository.existsByPhoneAndIdNotAndRoleNot(phone, user.getId(), UserRole.GUEST)) {
+                redirectAttributes.addFlashAttribute("updateError", "Số điện thoại đã được sử dụng bởi tài khoản khác");
+                return "redirect:/profile";
             }
             user.setPhone(phone);
+        } else if (phone != null && phone.isBlank()) {
+            user.setPhone(null);
         }
+
         if (address != null && !address.isBlank()) {
             user.setAddress(address);
+        } else if (address != null && address.isBlank()) {
+            user.setAddress(null);
         }
-        // Optional avatar upload
+
         try {
             if (avatarFile != null && !avatarFile.isEmpty()) {
                 String url = cloudinaryService.uploadImage(avatarFile, "avatars");
-                if (url != null) {
-                    user.setAvatarUrl(url);
-                }
+                if (url != null) user.setAvatarUrl(url);
             }
         } catch (Exception e) {
-            return "redirect:/profile?updateError";
+            redirectAttributes.addFlashAttribute("updateError", "Lỗi upload ảnh");
+            return "redirect:/profile";
         }
+
         userRepository.save(user);
+        redirectAttributes.addFlashAttribute("updateSuccess", "Cập nhật thông tin thành công!");
         return "redirect:/profile?updated";
     }
 
@@ -153,19 +166,15 @@ public class ProfileController {
 
     @Data
     public static class ChangePasswordForm {
-        @NotBlank
-        @Size(min = 6, max = 50)
-        @Pattern(regexp = "^\\S+$")
+        @NotBlank(message = "Vui lòng nhập mật khẩu hiện tại")
         private String oldPassword;
-        @NotBlank
-        @Size(min = 6, max = 50)
-        @Pattern(regexp = "^\\S+$")
+
+        @NotBlank(message = "Mật khẩu mới không được để trống")
+        @Size(min = 6, max = 50, message = "Mật khẩu phải từ 6 đến 50 ký tự")
+        @Pattern(regexp = "^\\S+$", message = "Mật khẩu không được chứa dấu cách")
         private String password;
-        @NotBlank
-        @Size(min = 6, max = 50)
-        @Pattern(regexp = "^\\S+$")
+
+        @NotBlank(message = "Vui lòng xác nhận mật khẩu")
         private String confirmPassword;
     }
 }
-
-

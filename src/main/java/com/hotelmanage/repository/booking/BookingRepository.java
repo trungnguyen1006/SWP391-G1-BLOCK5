@@ -1,6 +1,5 @@
 package com.hotelmanage.repository.booking;
 
-
 import com.hotelmanage.entity.Enum.BookingStatus;
 import com.hotelmanage.entity.booking.Booking;
 import org.springframework.data.domain.Page;
@@ -18,7 +17,7 @@ import java.util.Optional;
 
 @Repository
 public interface BookingRepository extends JpaRepository<Booking, Long> {
-    // Tìm tất cả booking của user
+
     @Query("SELECT b FROM Booking b WHERE b.user.id = :userId ORDER BY b.createdAt DESC")
     List<Booking> findByUserId(@Param("userId") Long userId);
 
@@ -26,7 +25,6 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     List<Booking> findExpiredPendingBookings(@Param("status") BookingStatus status,
                                              @Param("expiryTime") LocalDateTime expiryTime);
 
-    // Tìm tất cả booking với phân trang
     @Query("SELECT b FROM Booking b ORDER BY b.createdAt DESC")
     Page<Booking> findAllBookingsWithPagination(Pageable pageable);
 
@@ -50,16 +48,19 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     BigDecimal calculateRevenueByDateRange(@Param("startDate") LocalDateTime startDate,
                                            @Param("endDate") LocalDateTime endDate);
 
+    // Đếm booking theo trạng thái — dùng cho dashboard
     @Query("SELECT COUNT(b) FROM Booking b WHERE b.status = :status")
     Long countByStatus(@Param("status") BookingStatus status);
 
+    // Khách nhận phòng hôm nay
     List<Booking> findByCheckInDateAndStatus(LocalDate checkInDate, BookingStatus status);
 
+    // Khách trả phòng hôm nay
     List<Booking> findByCheckOutDateAndStatus(LocalDate checkOutDate, BookingStatus status);
 
+    // Booking đang CHECKED_IN của một phòng
     Optional<Booking> findFirstByRoomRoomIdAndStatus(Integer roomId, BookingStatus status);
 
+    // 5 booking gần nhất
     List<Booking> findTop5ByOrderByCreatedAtDesc();
-
-
 }

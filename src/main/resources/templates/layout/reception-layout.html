@@ -206,6 +206,7 @@
         }
     </style>
     <th:block layout:fragment="extra-css"></th:block>
+    <th:block layout:fragment="styles"></th:block>
 </head>
 <body>
 
@@ -236,6 +237,10 @@
         <a th:href="@{/reception/rooms}" class="nav-link" id="nav-rooms">
             <i class="fas fa-door-open"></i>
             <span>Cập nhật trạng thái phòng</span>
+        </a>
+        <a th:href="@{/reception/restaurant-bookings}" class="nav-link" id="nav-restaurant-bookings">
+            <i class="fas fa-calendar-check"></i>
+            <span>Đặt bàn nhà hàng</span>
         </a>
     </nav>
 
@@ -271,6 +276,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <th:block layout:fragment="extra-js"></th:block>
+<th:block layout:fragment="scripts"></th:block>
 
 <script>
     (function () {
@@ -278,7 +284,8 @@
         var map = {
             'nav-home':     ['/reception'],
             'nav-bookings': ['/reception/bookings'],
-            'nav-rooms':    ['/reception/rooms']
+            'nav-rooms':                 ['/reception/rooms'],
+            'nav-restaurant-bookings':   ['/reception/restaurant-bookings']
         };
         Object.entries(map).forEach(function ([id, paths]) {
             var el = document.getElementById(id);

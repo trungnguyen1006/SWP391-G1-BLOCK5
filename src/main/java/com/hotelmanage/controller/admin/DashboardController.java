@@ -40,6 +40,9 @@ public class DashboardController {
         return ResponseEntity.ok(stats);
     }
 
+    /**
+     * Dữ liệu doanh thu 6 tháng gần nhất cho bar chart
+     */
     @GetMapping("/chart/monthly-revenue")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Map<String, Object>> getMonthlyRevenueChart() {
@@ -47,11 +50,13 @@ public class DashboardController {
         return ResponseEntity.ok(dashboardService.getLast6MonthsRevenue());
     }
 
+    /**
+     * Số booking theo trạng thái cho doughnut chart
+     */
     @GetMapping("/chart/booking-status")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Map<String, Long>> getBookingStatusChart() {
-        log.info("Getting booking status chart data");
+        log.info("Getting booking status breakdown");
         return ResponseEntity.ok(dashboardService.getBookingStatusBreakdown());
     }
-
 }

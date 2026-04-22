@@ -1,11 +1,11 @@
 package com.hotelmanage.controller;
 
-
 import com.hotelmanage.entity.Enum.UserStatus;
 import com.hotelmanage.entity.User;
 import com.hotelmanage.repository.UserRepository;
 import com.hotelmanage.service.MailService;
 import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -18,10 +18,8 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.validation.Valid;
 import java.security.SecureRandom;
 import java.time.Instant;
-import java.util.Base64;
 import java.util.Optional;
 
 @Controller
@@ -33,11 +31,11 @@ public class ForgotPasswordController {
     private final PasswordEncoder passwordEncoder;
     private final MailService mailService;
 
-    static final String ATTR_EMAIL = "fp_email";
-    static final String ATTR_OTP = "fp_otp";
+    static final String ATTR_EMAIL       = "fp_email";
+    static final String ATTR_OTP         = "fp_otp";
     static final String ATTR_OTP_EXPIRES = "fp_otp_expires";
-    static final String ATTR_OTP_FAILED_ATTEMPTS = "fp_otp_failed_attempts";
-    static final int MAX_OTP_FAILED_ATTEMPTS = 5;
+    static final String ATTR_OTP_ATTEMPTS = "fp_otp_attempts";
+    static final int    MAX_OTP_ATTEMPTS  = 5;
 
     @GetMapping
     public String stepEmail(Model model) {
@@ -52,24 +50,24 @@ public class ForgotPasswordController {
                               HttpSession session,
                               Model model) {
         Optional<User> userOpt = userRepository.findByEmail(form.getEmail());
+
         if (userOpt.isEmpty()) {
             bindingResult.rejectValue("email", "email.notfound", "Email không tồn tại");
         } else if (userOpt.get().getStatus() != UserStatus.ACTIVE) {
-            bindingResult.rejectValue("email", "account.inactive", "Tài khoản chưa được kích hoạt hoặc đã bị khóa");
+            bindingResult.rejectValue("email", "email.inactive", "Tài khoản này đã bị vô hiệu hóa");
         }
+
         if (bindingResult.hasErrors()) {
             model.addAttribute("step", 1);
             return "auth/forgot/email";
         }
 
-        // Generate OTP (6 digits) and store in session with short TTL
         String otp = String.format("%06d", new SecureRandom().nextInt(1_000_000));
         session.setAttribute(ATTR_EMAIL, form.getEmail());
         session.setAttribute(ATTR_OTP, otp);
-        session.setAttribute(ATTR_OTP_EXPIRES, Instant.now().plusSeconds(300)); // 5 minutes
-        session.setAttribute(ATTR_OTP_FAILED_ATTEMPTS, 0);
+        session.setAttribute(ATTR_OTP_EXPIRES, Instant.now().plusSeconds(300));
+        session.setAttribute(ATTR_OTP_ATTEMPTS, 0);
 
-        // Gửi OTP qua email
         mailService.sendOtp(form.getEmail(), otp);
 
         model.addAttribute("otpForm", new OtpForm());
@@ -82,33 +80,31 @@ public class ForgotPasswordController {
                             BindingResult bindingResult,
                             HttpSession session,
                             Model model) {
-        Object expect = session.getAttribute(ATTR_OTP);
-        Object exp = session.getAttribute(ATTR_OTP_EXPIRES);
-        Integer failedAttempts = (Integer) session.getAttribute(ATTR_OTP_FAILED_ATTEMPTS);
-        if (failedAttempts == null) {
-            failedAttempts = 0;
-        }
+        Object expect  = session.getAttribute(ATTR_OTP);
+        Object exp     = session.getAttribute(ATTR_OTP_EXPIRES);
+        Object attObj  = session.getAttribute(ATTR_OTP_ATTEMPTS);
+        int attempts   = (attObj != null) ? (Integer) attObj : 0;
 
-        if (failedAttempts >= MAX_OTP_FAILED_ATTEMPTS) {
-            session.invalidate();
-            bindingResult.reject("otp.too_many_attempts", "Bạn đã nhập sai OTP quá 5 lần. Vui lòng thực hiện lại từ đầu.");
-        } else if (expect == null || exp == null || Instant.now().isAfter((Instant) exp)) {
+        if (expect == null || exp == null || Instant.now().isAfter((Instant) exp)) {
             bindingResult.reject("otp.expired", "Mã OTP đã hết hạn, vui lòng gửi lại");
         } else if (!String.valueOf(expect).equals(form.getOtp())) {
-            failedAttempts++;
-            int remainingAttempts = MAX_OTP_FAILED_ATTEMPTS - failedAttempts;
-            if (failedAttempts >= MAX_OTP_FAILED_ATTEMPTS) {
+            attempts++;
+            session.setAttribute(ATTR_OTP_ATTEMPTS, attempts);
+            if (attempts >= MAX_OTP_ATTEMPTS) {
                 session.invalidate();
-                bindingResult.reject("otp.too_many_attempts", "Bạn đã nhập sai OTP quá 5 lần. Vui lòng thực hiện lại từ đầu.");
+                bindingResult.reject("otp.locked", "Bạn đã nhập sai quá 5 lần. Vui lòng thực hiện lại từ đầu.");
             } else {
-                session.setAttribute(ATTR_OTP_FAILED_ATTEMPTS, failedAttempts);
-                bindingResult.rejectValue("otp", "otp.invalid", "Mã OTP không đúng. Bạn còn " + remainingAttempts + " lần thử.");
+                int remaining = MAX_OTP_ATTEMPTS - attempts;
+                bindingResult.rejectValue("otp", "otp.invalid",
+                        "Mã OTP không đúng. Còn " + remaining + " lần thử.");
             }
         }
+
         if (bindingResult.hasErrors()) {
             model.addAttribute("step", 2);
             return "auth/forgot/otp";
         }
+
         model.addAttribute("resetForm", new ResetForm());
         model.addAttribute("step", 3);
         return "auth/forgot/reset";
@@ -128,10 +124,12 @@ public class ForgotPasswordController {
         if (bindingResult.hasErrors()) {
             return "auth/forgot/reset";
         }
-        userRepository.findByEmail(email).ifPresent(user -> {
-            user.setPassword(passwordEncoder.encode(form.getPassword()));
-            userRepository.save(user);
-        });
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy tài khoản"));
+        user.setPassword(passwordEncoder.encode(form.getPassword()));
+        userRepository.save(user);
+
         session.invalidate();
         return "redirect:/login?reset";
     }
@@ -145,22 +143,19 @@ public class ForgotPasswordController {
 
     @Data
     public static class OtpForm {
-        @NotBlank
+        @NotBlank(message = "Vui lòng nhập mã OTP")
         @Pattern(regexp = "^[0-9]{6}$", message = "OTP phải gồm đúng 6 chữ số")
         private String otp;
     }
 
     @Data
     public static class ResetForm {
-        @NotBlank
+        @NotBlank(message = "Mật khẩu không được để trống")
         @Size(min = 6, max = 50, message = "Mật khẩu phải từ 6 đến 50 ký tự")
-        @Pattern(regexp = "^\\S+$", message = "Mật khẩu không được chứa khoảng trắng")
+        @Pattern(regexp = "^\\S+$", message = "Mật khẩu không được chứa dấu cách")
         private String password;
-        @NotBlank
-        @Size(min = 6, max = 50, message = "Mật khẩu xác nhận phải từ 6 đến 50 ký tự")
-        @Pattern(regexp = "^\\S+$", message = "Mật khẩu xác nhận không được chứa khoảng trắng")
+
+        @NotBlank(message = "Vui lòng xác nhận mật khẩu")
         private String confirmPassword;
     }
 }
-
-

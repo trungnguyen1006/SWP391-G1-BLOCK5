@@ -1,6 +1,7 @@
 package com.hotelmanage.service;
 
 import com.hotelmanage.entity.booking.Booking;
+import com.hotelmanage.entity.restaurant.RestaurantBooking;
 import lombok.RequiredArgsConstructor;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -67,6 +68,164 @@ public class MailService {
         message.setText(emailContent);
 
         mailSender.send(message);
+    }
+
+    // ── Email 1: Gửi ngay khi khách đặt bàn (PENDING) ──────────────────
+    public void sendRestaurantBookingReceived(RestaurantBooking booking) {
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+        String guestName = resolveGuestName(booking);
+
+        String body = String.format("""
+                Kính gửi %s,
+
+                Chúng tôi đã nhận được yêu cầu đặt bàn của bạn tại %s.
+                Nhà hàng sẽ xác nhận trong vòng 30 phút.
+
+                THÔNG TIN ĐẶT BÀN:
+                ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                Mã đặt bàn  : #%d
+                Nhà hàng    : %s
+                Ngày        : %s
+                Ca          : %s
+                Số khách    : %d người
+                Trạng thái  : CHỜ XÁC NHẬN
+                ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                %s
+                Liên hệ hỗ trợ: %s
+
+                Trân trọng,
+                Khách sạn Hội An
+                """,
+                guestName,
+                booking.getRestaurant().getName(),
+                booking.getBookingId(),
+                booking.getRestaurant().getName(),
+                booking.getBookingDate().format(fmt),
+                booking.getBookingShift().getLabel(),
+                booking.getNumberOfGuests(),
+                formatSpecialRequest(booking),
+                resolveContact(booking)
+        );
+
+        send(booking.getUser().getEmail(),
+             "[Đặt bàn #" + booking.getBookingId() + "] Đã nhận – " + booking.getRestaurant().getName(),
+             body);
+    }
+
+    // ── Email 2: Gửi khi nhân viên xác nhận (CONFIRMED) ────────────────
+    public void sendRestaurantBookingConfirmed(RestaurantBooking booking) {
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+        String guestName = resolveGuestName(booking);
+
+        String body = String.format("""
+                Kính gửi %s,
+
+                Đặt bàn của bạn đã được XÁC NHẬN! Hẹn gặp bạn tại %s.
+
+                THÔNG TIN ĐẶT BÀN:
+                ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                Mã đặt bàn  : #%d
+                Nhà hàng    : %s
+                Ngày        : %s
+                Ca          : %s
+                Số khách    : %d người
+                Trạng thái  : ĐÃ XÁC NHẬN
+                ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                %s
+                Lưu ý: Vui lòng có mặt đúng giờ. Bàn sẽ được giữ trong 15 phút.
+                Liên hệ hỗ trợ: %s
+
+                Trân trọng,
+                Khách sạn Hội An
+                """,
+                guestName,
+                booking.getRestaurant().getName(),
+                booking.getBookingId(),
+                booking.getRestaurant().getName(),
+                booking.getBookingDate().format(fmt),
+                booking.getBookingShift().getLabel(),
+                booking.getNumberOfGuests(),
+                formatSpecialRequest(booking),
+                resolveContact(booking)
+        );
+
+        send(booking.getUser().getEmail(),
+             "✅ [Đặt bàn #" + booking.getBookingId() + "] Đã xác nhận – " + booking.getRestaurant().getName(),
+             body);
+    }
+
+    // ── Email 3: Gửi khi booking bị hủy (CANCELLED) ────────────────────
+    public void sendRestaurantBookingCancelled(RestaurantBooking booking) {
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+        String guestName = resolveGuestName(booking);
+        String reason = (booking.getCancelReason() != null && !booking.getCancelReason().isBlank())
+                ? booking.getCancelReason()
+                : "Không có lý do cụ thể";
+
+        String body = String.format("""
+                Kính gửi %s,
+
+                Rất tiếc, đặt bàn của bạn tại %s đã bị HỦY.
+
+                THÔNG TIN ĐẶT BÀN:
+                ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                Mã đặt bàn  : #%d
+                Nhà hàng    : %s
+                Ngày        : %s
+                Ca          : %s
+                Số khách    : %d người
+                Trạng thái  : ĐÃ HỦY
+                ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                Lý do hủy   : %s
+
+                Nếu bạn muốn đặt lại hoặc cần hỗ trợ, vui lòng liên hệ: %s
+
+                Xin lỗi vì sự bất tiện này.
+                Trân trọng,
+                Khách sạn Hội An
+                """,
+                guestName,
+                booking.getRestaurant().getName(),
+                booking.getBookingId(),
+                booking.getRestaurant().getName(),
+                booking.getBookingDate().format(fmt),
+                booking.getBookingShift().getLabel(),
+                booking.getNumberOfGuests(),
+                reason,
+                resolveContact(booking)
+        );
+
+        send(booking.getUser().getEmail(),
+             "❌ [Đặt bàn #" + booking.getBookingId() + "] Đã hủy – " + booking.getRestaurant().getName(),
+             body);
+    }
+
+    // ── Helpers ─────────────────────────────────────────────────────────
+    private void send(String to, String subject, String text) {
+        SimpleMailMessage msg = new SimpleMailMessage();
+        msg.setTo(to);
+        msg.setSubject(subject);
+        msg.setText(text);
+        mailSender.send(msg);
+    }
+
+    private String resolveGuestName(RestaurantBooking booking) {
+        // GUEST user lưu tên vào trường address
+        String addr = booking.getUser().getAddress();
+        return (addr != null && !addr.isBlank()) ? addr : booking.getUser().getUsername();
+    }
+
+    private String resolveContact(RestaurantBooking booking) {
+        String c = booking.getRestaurant().getContactInfo();
+        return (c != null && !c.isBlank()) ? c : "lễ tân khách sạn";
+    }
+
+    private String formatSpecialRequest(RestaurantBooking booking) {
+        String sr = booking.getSpecialRequest();
+        return (sr != null && !sr.isBlank()) ? "Yêu cầu đặc biệt: " + sr + "\n" : "";
     }
 
 }

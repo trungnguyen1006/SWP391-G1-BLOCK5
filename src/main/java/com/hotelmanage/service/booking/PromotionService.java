@@ -22,10 +22,6 @@ public class PromotionService {
         return promotionRepository.findAll();
     }
 
-
-    /**
-     * Validate và trả về promotion nếu hợp lệ
-     */
     public Promotion validatePromotion(String code) {
         log.info("Validating promotion code: {}", code);
 
@@ -34,21 +30,15 @@ public class PromotionService {
 
         LocalDate today = LocalDate.now();
 
-        // Kiểm tra còn hiệu lực
         if (!promotion.getIsActive()) {
             throw new RuntimeException("Mã giảm giá đã hết hiệu lực!");
         }
-
-        // Kiểm tra thời gian
         if (today.isBefore(promotion.getStartDate())) {
             throw new RuntimeException("Mã giảm giá chưa có hiệu lực!");
         }
-
         if (today.isAfter(promotion.getEndDate())) {
             throw new RuntimeException("Mã giảm giá đã hết hạn!");
         }
-
-        // Kiểm tra số lần dùng
         if (promotion.getUsageLimit() != null &&
                 promotion.getUsedCount() >= promotion.getUsageLimit()) {
             throw new RuntimeException("Mã giảm giá đã hết lượt sử dụng!");
@@ -59,17 +49,22 @@ public class PromotionService {
     }
 
     /**
-     * Tăng số lần đã sử dụng promotion
+     * Tăng số lần sử dụng — dùng atomic UPDATE tránh race condition
      */
     public void incrementUsedCount(Integer promotionId) {
-        Promotion promotion = promotionRepository.findById(promotionId)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy promotion!"));
+        int updated = promotionRepository.incrementUsedCount(promotionId);
+        if (updated == 0) {
+            throw new RuntimeException("Không tìm thấy promotion ID: " + promotionId);
+        }
+        log.info("Incremented used count for promotion ID: {}", promotionId);
+    }
 
-        promotion.setUsedCount(promotion.getUsedCount() + 1);
-        promotionRepository.save(promotion);
-
-        log.info("Incremented used count for promotion: {}, current count: {}",
-                promotion.getCode(), promotion.getUsedCount());
+    /**
+     * Giảm số lần sử dụng khi hủy booking — atomic, không giảm dưới 0
+     */
+    public void decrementUsedCount(Integer promotionId) {
+        int updated = promotionRepository.decrementUsedCount(promotionId);
+        log.info("Decremented used count for promotion ID: {}, rows affected: {}", promotionId, updated);
     }
 
     public List<Promotion> findAllActive() {
