@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/admin-layout}">
+<head>
+    <title>Quản lý Nhà hàng</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <h1>Nhà hàng</h1>
+    <form method="get" class="form" style="display:flex;gap:8px;align-items:center; width: 100%;">
+        <input type="text"
+               name="q"
+               th:value="${q}"
+               placeholder="Tìm theo tên..."
+               style="width: 80%; padding: 10px 15px;"/>
+        <button class="btn"
+                type="submit"
+                style="width: 20%; padding: 8px 12px; box-sizing: border-box;">
+            <i class="fa-solid fa-magnifying-glass"></i> Tìm
+        </button>
+    </form>
+
+    <div>
+        <a class="btn primary" th:href="@{/admin/restaurants/create}" style="padding:6px 12px;margin-top:8px;display:inline-block">
+            <i class="fa-solid fa-plus"></i> Thêm
+        </a>
+    </div>
+
+    <table class="table" style="width:100%;margin-top:12px">
+        <thead>
+        <tr>
+            <th>Ảnh</th>
+            <th>Tên</th>
+            <th>Ẩm thực</th>
+            <th>Giờ</th>
+            <th>Giá</th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="r : ${page}">
+            <td><img th:src="${r.imageUrl} ?: @{/images/placeholder-restaurant.svg}" alt="img" style="width:72px;height:48px;object-fit:cover;border-radius:6px"/></td>
+            <td th:text="${r.name}">Tên</td>
+            <td th:text="${r.cuisineType}">Ẩm thực</td>
+            <td th:text="${r.openingHours}">Giờ</td>
+            <td th:text="${r.priceRange}">Giá</td>
+            <td style="text-align:right;white-space:nowrap">
+                <a class="btn" th:href="@{'/admin/restaurants/' + ${r.id} + '/view'}"><i class="fa-regular fa-eye"></i> Xem</a>
+                <a class="btn" th:href="@{'/admin/restaurants/' + ${r.id} + '/edit'}"><i class="fa-regular fa-pen-to-square"></i> Sửa</a>
+                <form th:action="@{'/admin/restaurants/' + ${r.id} + '/delete'}" method="post" style="display:inline">
+                    <button class="btn" type="submit" onclick="return confirm('Xóa nhà hàng?')"><i class="fa-regular fa-trash-can"></i> Xóa</button>
+                </form>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <div class="pagination" style="display:flex;gap:8px;margin-top:10px;align-items:center">
+        <a class="btn" th:href="@{/admin/restaurants(page=${page.number>0 ? page.number-1 : 0},q=${q})}">«</a>
+        <a class="btn"
+           th:each="p : ${#numbers.sequence(1, page.totalPages > 0 ? page.totalPages : 1)}"
+           th:text="${p}"
+           th:classappend="${p == page.number+1} ? ' primary' : ''"
+           th:href="@{/admin/restaurants(page=${p-1},q=${q})}"></a>
+        <a class="btn" th:href="@{/admin/restaurants(page=${page.number+1 < page.totalPages ? page.number+1 : page.totalPages-1},q=${q})}">»</a>
+        <span style="margin-left:8px">Trang <span th:text="${page.totalPages > 0 ? page.number+1 : 1}"></span>/<span th:text="${page.totalPages > 0 ? page.totalPages : 1}"></span></span>
+    </div>
+</div>
+</body>
+</html>
