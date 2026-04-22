@@ -27,7 +27,7 @@ public class HomeController {
         return "users/homepage";
     }
 
-    @GetMapping({"/admin", "/home"})
+    @GetMapping({"/admin", "/reception", "/home"})
     public String roleLanding(Authentication authentication) {
         if (authentication == null) return "redirect:/";
         for (GrantedAuthority a : authentication.getAuthorities()) {
