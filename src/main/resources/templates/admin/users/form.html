@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/admin-layout}">
+<head>
+    <title th:text="${isEdit} ? 'Sửa user' : 'Thêm user'">Form User - Hoi An Hotel</title>
+    <th:block layout:fragment="extra-css">
+        <style>
+            .form {
+                max-width: 600px;
+                margin: 0 auto;
+                padding: 20px;
+                background: #fff;
+                border-radius: 8px;
+                box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            }
+
+            .form label {
+                display: block;
+                margin-bottom: 20px;
+                font-weight: 500;
+            }
+
+            .form input, .form select {
+                width: 100%;
+                padding: 10px 15px;
+                border: 1px solid #d9d4ca;
+                border-radius: 10px;
+                background: #fbf9f4;
+                font-size: 15px;
+                margin-top: 5px;
+            }
+
+            .form select {
+                cursor: pointer;
+            }
+
+            .dropzone {
+                border: 2px dashed #d9d4ca;
+                border-radius: 10px;
+                padding: 20px;
+                text-align: center;
+                background: #fbf9f4;
+                cursor: pointer;
+                transition: all 0.3s ease;
+            }
+
+            .dropzone.dragover {
+                border-color: #f9c74f;
+                background: #fff9e6;
+            }
+
+            .dropzone .hint {
+                color: #666;
+                font-size: 14px;
+                margin-top: 8px;
+            }
+
+            .dropzone .preview {
+                margin-top: 20px;
+            }
+
+            .dropzone .preview img {
+                max-width: 200px;
+                max-height: 200px;
+                border-radius: 50%;
+                box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            }
+
+            .btn {
+                display: inline-block;
+                padding: 10px 25px;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+                font-weight: 500;
+                text-decoration: none;
+                transition: background-color 0.3s;
+            }
+
+            .btn.primary {
+                background: #f9c74f;
+                color: #000;
+            }
+
+            .btn:hover {
+                opacity: 0.9;
+            }
+
+            .modal-actions {
+                text-align: center;
+                margin-top: 30px;
+            }
+
+            .modal-actions .btn {
+                margin: 0 5px;
+            }
+
+            .alert-error {
+                background: #f8d7da;
+                border: 1px solid #f5c6cb;
+                border-radius: 8px;
+                color: #721c24;
+                padding: 12px;
+                margin-bottom: 20px;
+                text-align: center;
+            }
+        </style>
+    </th:block>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="form">
+        <h1 th:text="${isEdit} ? 'Sửa user' : 'Thêm user'" class="mb-4">Thêm user</h1>
+
+        <div th:if="${error}" class="alert-error">
+            <span th:text="${error}">Lỗi</span>
+        </div>
+
+        <form th:action="${isEdit ? '/admin/users/' + user.id : '/admin/users'}"
+              method="post"
+              enctype="multipart/form-data">
+
+            <label>
+                Tên đăng nhập <span style="color:red;">*</span>
+                <input type="text" name="username" th:value="${user?.username}" placeholder="Nhập tên đăng nhập" required />
+            </label>
+
+            <label th:if="${!isEdit}">
+                Mật khẩu <span style="color:red;">*</span>
+                <input type="password" name="password" placeholder="Nhập mật khẩu" required />
+            </label>
+
+            <label>
+                Email <span style="color:red;">*</span>
+                <input type="email" name="email" th:value="${user?.email}" placeholder="Nhập email" required />
+            </label>
+
+            <label>
+                Số điện thoại
+                <input type="text" name="phone" th:value="${user?.phone}" placeholder="Ví dụ: 0901234567" />
+            </label>
+
+            <label>
+                Địa chỉ
+                <input type="text" name="address" th:value="${user?.address}" placeholder="Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành" />
+            </label>
+
+            <label>
+                Vai trò <span style="color:red;">*</span>
+                <select name="role" required>
+                    <option value="CUSTOMER" th:selected="${user?.role?.name() == 'CUSTOMER'}">Customer (Khách hàng)</option>
+                    <option value="RECEPTIONIST" th:selected="${user?.role?.name() == 'RECEPTIONIST'}">Receptionist (Lễ tân)</option>
+                </select>
+            </label>
+
+            <label>Avatar</label>
+            <div class="dropzone" id="dz" onclick="dzFile.click()" ondragover="dzDrag(event)" ondragleave="dzLeave(event)" ondrop="dzDrop(event)">
+                <input type="file" id="dzFile" name="avatarFile" accept="image/*" hidden onchange="dzPreview(this.files)" />
+                <div>Thả ảnh vào đây hoặc bấm để chọn</div>
+                <div class="hint">Hỗ trợ: JPG, PNG, WEBP. Tối đa ~5MB</div>
+                <div class="preview" id="dzPreview">
+                    <img th:src="${user?.avatarUrl ?: '/images/avatar-placeholder.svg'}"
+                         alt="preview"
+                         onerror="this.onerror=null; this.src='/images/avatar-placeholder.svg';" />
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <a class="btn" th:href="@{/admin/users}">Hủy</a>
+                <button class="btn primary" type="submit">Lưu</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<th:block layout:fragment="extra-js">
+    <script th:inline="javascript">
+        const dz = document.getElementById('dz');
+        const dzFile = document.getElementById('dzFile');
+        const dzPreviewEl = document.getElementById('dzPreview');
+
+        function dzDrag(e){ e.preventDefault(); dz.classList.add('dragover'); }
+        function dzLeave(e){ e.preventDefault(); dz.classList.remove('dragover'); }
+        function dzDrop(e){
+            e.preventDefault();
+            dz.classList.remove('dragover');
+            if(e.dataTransfer?.files?.[0]){
+                dzFile.files = e.dataTransfer.files;
+                dzPreviewFiles(e.dataTransfer.files);
+            }
+        }
+        function dzPreview(files){ dzPreviewFiles(files); }
+        function dzPreviewFiles(files){
+            dzPreviewEl.innerHTML = '';
+            if(!files?.[0]) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                dzPreviewEl.appendChild(img);
+            };
+            reader.readAsDataURL(files[0]);
+        }
+    </script>
+</th:block>
+</body>
+</html>
