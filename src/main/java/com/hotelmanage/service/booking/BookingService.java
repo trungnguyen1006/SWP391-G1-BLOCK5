@@ -18,7 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -33,8 +32,29 @@ public class BookingService {
     private final PromotionService promotionService;
     private final PromotionRepository promotionRepository;
 
+    /**
+     * Hủy booking và hoàn trả lượt dùng promotion nếu có
+     */
+    public void cancelBooking(Integer bookingId) {
+        Booking booking = bookingRepository.findById(bookingId.longValue())
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy booking!"));
+
+        if (booking.getStatus() == BookingStatus.CANCELLED_PERMANENTLY) {
+            throw new RuntimeException("Booking đã được hủy trước đó!");
+        }
+
+        booking.setStatus(BookingStatus.CANCELLED_PERMANENTLY);
+        bookingRepository.save(booking);
+
+        if (booking.getPromotion() != null) {
+            promotionService.decrementUsedCount(booking.getPromotion().getPromotionId());
+        }
+
+        log.info("Cancelled booking ID: {}", bookingId);
+    }
+
     public Booking createBooking(String username,
-                                 Integer roomId, // Đổi tên parameter
+                                 Integer roomId,
                                  LocalDate checkInDate,
                                  LocalDate checkOutDate,
                                  BigDecimal totalPrice,
@@ -42,11 +62,9 @@ public class BookingService {
 
         log.info("Creating booking for user: {}, roomId: {}", username, roomId);
 
-
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng!"));
 
-        // Tìm phòng theo roomId thay vì tìm available rooms
         Room selectedRoom = roomRepository.findById(roomId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy phòng!"));
 
@@ -69,7 +87,7 @@ public class BookingService {
         return savedBooking;
     }
 
-    public Booking createGuestBooking(Integer roomId, // Đổi tên parameter
+    public Booking createGuestBooking(Integer roomId,
                                       LocalDate checkInDate,
                                       LocalDate checkOutDate,
                                       BigDecimal totalPrice,
@@ -80,14 +98,12 @@ public class BookingService {
 
         log.info("Creating guest booking for email: {}, roomId: {}", customerEmail, roomId);
 
-
         if (checkOutDate.isBefore(checkInDate) || checkOutDate.isEqual(checkInDate)) {
             throw new RuntimeException("Ngày trả phòng phải sau ngày nhận phòng!");
         }
 
         User guestUser = createGuestUser(customerEmail, phone, address);
 
-        // Tìm phòng theo roomId thay vì tìm available rooms
         Room selectedRoom = roomRepository.findById(roomId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy phòng!"));
 
@@ -108,31 +124,23 @@ public class BookingService {
 
         Booking saved = bookingRepository.save(booking);
         log.info("Created guest booking with ID: {} for email: {}", saved.getBookingId(), customerEmail);
-
         return saved;
     }
 
-    /**
-     * Tạo user guest tạm thời chỉ với email
-     * User này có thể được nâng cấp lên CUSTOMER khi đăng ký tài khoản
-     */
     private User createGuestUser(String customerEmail, String phone, String address) {
-        // Kiểm tra email đã tồn tại
         return userRepository.findByEmail(customerEmail)
                 .map(existingUser -> {
-                    // Nếu email đã tồn tại với role CUSTOMER hoặc ADMIN
                     if (existingUser.getRole() == UserRole.CUSTOMER ||
-                            existingUser.getRole() == UserRole.ADMIN || existingUser.getRole() == UserRole.RECEPTIONIST) {
+                            existingUser.getRole() == UserRole.ADMIN ||
+                            existingUser.getRole() == UserRole.RECEPTIONIST) {
                         throw new RuntimeException("Email này đã được đăng ký. Vui lòng đăng nhập để đặt phòng!");
                     }
-                    // Nếu là GUEST cũ, cập nhật thông tin
                     existingUser.setPhone(phone);
                     existingUser.setAddress(address);
                     log.info("Updated existing guest user with email: {}", customerEmail);
                     return userRepository.save(existingUser);
                 })
                 .orElseGet(() -> {
-                    // Tạo user guest mới
                     User guest = User.builder()
                             .username("guest_" + customerEmail.split("@")[0] + "_" + System.currentTimeMillis())
                             .password("")
@@ -142,13 +150,9 @@ public class BookingService {
                             .phone(phone)
                             .address(address)
                             .build();
-
                     User saved = userRepository.save(guest);
                     log.info("Created temporary guest user with email: {}", customerEmail);
                     return saved;
                 });
     }
-
-
 }
-

@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/admin-layout}">
+<head>
+    <title>Đặt bàn nhà hàng</title>
+</head>
+<body>
+<div layout:fragment="content">
+
+    <!-- Header -->
+    <div style="margin-bottom:24px">
+        <h2 style="margin:0 0 4px;font-size:1.6rem;color:#1e293b">
+            <i class="fa-solid fa-utensils" style="color:#6366f1"></i> Quản lý đặt bàn nhà hàng
+        </h2>
+        <p style="margin:0;color:#64748b">Xem, xác nhận hoặc hủy đặt bàn của khách</p>
+    </div>
+
+    <!-- Flash messages -->
+    <div th:if="${success}"
+         style="background:#dcfce7;border:1px solid #86efac;color:#166534;padding:12px 16px;border-radius:8px;margin-bottom:16px;display:flex;align-items:center;gap:8px">
+        <i class="fa-solid fa-circle-check"></i><span th:text="${success}"></span>
+    </div>
+    <div th:if="${error}"
+         style="background:#fee2e2;border:1px solid #fca5a5;color:#b91c1c;padding:12px 16px;border-radius:8px;margin-bottom:16px;display:flex;align-items:center;gap:8px">
+        <i class="fa-solid fa-circle-exclamation"></i><span th:text="${error}"></span>
+    </div>
+
+    <!-- Filter form -->
+    <form method="get" th:action="@{/admin/restaurant-bookings}"
+          style="display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;margin-bottom:20px;background:#f8fafc;padding:16px;border-radius:12px;border:1px solid #e2e8f0">
+
+        <div style="display:flex;flex-direction:column;gap:4px;min-width:180px">
+            <label style="font-size:.82rem;font-weight:600;color:#475569">Trạng thái</label>
+            <select name="status" style="padding:8px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.9rem">
+                <option value="">-- Tất cả --</option>
+                <option th:each="s : ${statusList}"
+                        th:value="${s.name()}"
+                        th:text="${s.name() == 'PENDING' ? 'Chờ xác nhận' : (s.name() == 'CONFIRMED' ? 'Đã xác nhận' : 'Đã hủy')}"
+                        th:selected="${selectedStatus != null and selectedStatus.name() == s.name()}">
+                </option>
+            </select>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:4px;min-width:200px">
+            <label style="font-size:.82rem;font-weight:600;color:#475569">Nhà hàng</label>
+            <select name="restaurantId" style="padding:8px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.9rem">
+                <option value="">-- Tất cả --</option>
+                <option th:each="r : ${restaurants}"
+                        th:value="${r.id}"
+                        th:text="${r.name}"
+                        th:selected="${selectedRestaurant != null and selectedRestaurant == r.id}">
+                </option>
+            </select>
+        </div>
+
+        <button type="submit"
+                style="padding:9px 20px;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer">
+            <i class="fa-solid fa-filter"></i> Lọc
+        </button>
+        <a th:href="@{/admin/restaurant-bookings}"
+           style="padding:9px 16px;background:#f1f5f9;color:#475569;border-radius:8px;text-decoration:none;font-weight:600">
+            <i class="fa-solid fa-xmark"></i> Xóa lọc
+        </a>
+    </form>
+
+    <!-- Table -->
+    <div style="background:#fff;border-radius:14px;box-shadow:0 2px 12px rgba(0,0,0,.07);overflow:hidden">
+        <table class="table" style="width:100%;border-collapse:collapse;font-size:.9rem">
+            <thead style="background:#f8fafc">
+            <tr>
+                <th style="padding:12px 16px;text-align:left;font-weight:600;color:#475569;border-bottom:2px solid #e2e8f0">#</th>
+                <th style="padding:12px 16px;text-align:left;font-weight:600;color:#475569;border-bottom:2px solid #e2e8f0">Nhà hàng</th>
+                <th style="padding:12px 16px;text-align:left;font-weight:600;color:#475569;border-bottom:2px solid #e2e8f0">Khách</th>
+                <th style="padding:12px 16px;text-align:left;font-weight:600;color:#475569;border-bottom:2px solid #e2e8f0">Ngày</th>
+                <th style="padding:12px 16px;text-align:left;font-weight:600;color:#475569;border-bottom:2px solid #e2e8f0">Ca</th>
+                <th style="padding:12px 16px;text-align:center;font-weight:600;color:#475569;border-bottom:2px solid #e2e8f0">Khách</th>
+                <th style="padding:12px 16px;text-align:left;font-weight:600;color:#475569;border-bottom:2px solid #e2e8f0">Trạng thái</th>
+                <th style="padding:12px 16px;text-align:center;font-weight:600;color:#475569;border-bottom:2px solid #e2e8f0">Ngày tạo</th>
+                <th style="padding:12px 16px;text-align:center;font-weight:600;color:#475569;border-bottom:2px solid #e2e8f0">Thao tác</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="b : ${bookingPage.content}"
+                style="border-bottom:1px solid #f1f5f9;transition:background .15s"
+                onmouseover="this.style.background='#fafbff'" onmouseout="this.style.background=''">
+
+                <td style="padding:12px 16px;color:#94a3b8" th:text="'#' + ${b.bookingId}"></td>
+
+                <td style="padding:12px 16px">
+                    <div style="font-weight:600;color:#1e293b" th:text="${b.restaurant.name}"></div>
+                </td>
+
+                <td style="padding:12px 16px">
+                    <div style="font-weight:500;color:#334155" th:text="${b.user != null ? b.user.username : '—'}"></div>
+                    <div style="font-size:.8rem;color:#94a3b8" th:text="${b.user != null ? b.user.email : ''}"></div>
+                    <div style="font-size:.8rem;color:#94a3b8" th:text="${b.user != null ? b.user.phone : ''}"></div>
+                </td>
+
+                <td style="padding:12px 16px;color:#334155;white-space:nowrap"
+                    th:text="${#temporals.format(b.bookingDate, 'dd/MM/yyyy')}"></td>
+
+                <td style="padding:12px 16px;color:#334155;white-space:nowrap"
+                    th:text="${b.bookingShift.label}"></td>
+
+                <td style="padding:12px 16px;text-align:center;font-weight:600;color:#334155"
+                    th:text="${b.numberOfGuests}"></td>
+
+                <td style="padding:12px 16px">
+                    <span th:if="${b.status.name() == 'PENDING'}"
+                          style="display:inline-block;padding:4px 12px;border-radius:20px;font-size:.78rem;font-weight:600;background:#fef9c3;color:#854d0e">
+                        Chờ xác nhận
+                    </span>
+                    <span th:if="${b.status.name() == 'CONFIRMED'}"
+                          style="display:inline-block;padding:4px 12px;border-radius:20px;font-size:.78rem;font-weight:600;background:#dcfce7;color:#166534">
+                        Đã xác nhận
+                    </span>
+                    <span th:if="${b.status.name() == 'CANCELLED'}"
+                          style="display:inline-block;padding:4px 12px;border-radius:20px;font-size:.78rem;font-weight:600;background:#fee2e2;color:#991b1b">
+                        Đã hủy
+                    </span>
+                </td>
+
+                <td style="padding:12px 16px;text-align:center;color:#94a3b8;font-size:.82rem;white-space:nowrap"
+                    th:text="${#temporals.format(b.createdAt, 'dd/MM HH:mm')}"></td>
+
+                <td style="padding:12px 16px;text-align:center;white-space:nowrap">
+                    <!-- Confirm button (only PENDING) -->
+                    <form th:if="${b.status.name() == 'PENDING'}"
+                          th:action="@{/admin/restaurant-bookings/{id}/confirm(id=${b.bookingId})}"
+                          method="post" style="display:inline">
+                        <button type="submit"
+                                style="padding:5px 12px;background:#dcfce7;color:#166534;border:none;border-radius:6px;cursor:pointer;font-size:.82rem;font-weight:600"
+                                onclick="return confirm('Xác nhận đặt bàn #' + [[${b.bookingId}]] + '?')">
+                            <i class="fa-solid fa-check"></i> Xác nhận
+                        </button>
+                    </form>
+                    <!-- Cancel button → mở modal nhập lý do -->
+                    <button th:if="${b.status.name() == 'PENDING' or b.status.name() == 'CONFIRMED'}"
+                            type="button"
+                            style="padding:5px 12px;background:#fee2e2;color:#b91c1c;border:none;border-radius:6px;cursor:pointer;font-size:.82rem;font-weight:600;margin-left:4px"
+                            th:onclick="|openCancelModal(${b.bookingId})|">
+                        <i class="fa-solid fa-xmark"></i> Hủy
+                    </button>
+                    <span th:if="${b.status.name() == 'CANCELLED'}" style="color:#cbd5e1;font-size:.82rem">—</span>
+                </td>
+            </tr>
+            <tr th:if="${bookingPage.totalElements == 0}">
+                <td colspan="9" style="padding:48px;text-align:center;color:#94a3b8">
+                    <i class="fa-regular fa-calendar-xmark" style="font-size:2rem;display:block;margin-bottom:8px"></i>
+                    Chưa có đặt bàn nào
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    <div th:if="${bookingPage.totalPages > 1}"
+         style="display:flex;align-items:center;justify-content:center;gap:6px;margin-top:20px">
+        <a th:href="@{/admin/restaurant-bookings(page=${bookingPage.number > 0 ? bookingPage.number-1 : 0},status=${selectedStatus},restaurantId=${selectedRestaurant})}"
+           style="padding:7px 14px;background:#f1f5f9;color:#475569;border-radius:8px;text-decoration:none;font-size:.85rem">«</a>
+        <a th:each="p : ${#numbers.sequence(0, bookingPage.totalPages - 1)}"
+           th:href="@{/admin/restaurant-bookings(page=${p},status=${selectedStatus},restaurantId=${selectedRestaurant})}"
+           th:text="${p + 1}"
+           th:style="${p == bookingPage.number} ? 'padding:7px 14px;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;border-radius:8px;text-decoration:none;font-size:.85rem;font-weight:600' : 'padding:7px 14px;background:#f1f5f9;color:#475569;border-radius:8px;text-decoration:none;font-size:.85rem'">
+        </a>
+        <a th:href="@{/admin/restaurant-bookings(page=${bookingPage.number + 1 < bookingPage.totalPages ? bookingPage.number+1 : bookingPage.totalPages-1},status=${selectedStatus},restaurantId=${selectedRestaurant})}"
+           style="padding:7px 14px;background:#f1f5f9;color:#475569;border-radius:8px;text-decoration:none;font-size:.85rem">»</a>
+    </div>
+    <p style="text-align:center;color:#94a3b8;font-size:.85rem;margin-top:10px"
+       th:if="${bookingPage.totalElements > 0}">
+        Tổng <strong th:text="${bookingPage.totalElements}"></strong> đặt bàn —
+        Trang <strong th:text="${bookingPage.number + 1}"></strong>/<strong th:text="${bookingPage.totalPages}"></strong>
+    </p>
+
+    <!-- ── Modal nhập lý do hủy ── -->
+    <div id="cancelModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;align-items:center;justify-content:center">
+        <div style="background:#fff;border-radius:16px;padding:32px;width:100%;max-width:460px;box-shadow:0 20px 60px rgba(0,0,0,.2)">
+            <h3 style="margin:0 0 6px;font-size:1.1rem;color:#1e293b">
+                <i class="fa-solid fa-ban" style="color:#ef4444"></i> Hủy đặt bàn
+            </h3>
+            <p style="color:#64748b;font-size:.88rem;margin:0 0 18px">
+                Lý do sẽ được gửi đến email khách hàng.
+            </p>
+            <form id="cancelForm" method="post">
+                <input type="hidden" name="_csrf" th:value="${_csrf.token}"/>
+                <div style="margin-bottom:16px">
+                    <label style="display:block;font-weight:600;font-size:.88rem;color:#374151;margin-bottom:6px">
+                        Lý do hủy <span style="color:#ef4444">*</span>
+                    </label>
+                    <textarea name="cancelReason" id="cancelReason" rows="3" required
+                              placeholder="Ví dụ: Nhà hàng hết chỗ, sự cố kỹ thuật..."
+                              style="width:100%;padding:10px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.9rem;resize:vertical;box-sizing:border-box"
+                              onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e2e8f0'"></textarea>
+                </div>
+                <div style="display:flex;gap:10px;justify-content:flex-end">
+                    <button type="button" onclick="closeCancelModal()"
+                            style="padding:9px 20px;background:#f1f5f9;color:#475569;border:none;border-radius:8px;font-weight:600;cursor:pointer">
+                        Đóng
+                    </button>
+                    <button type="submit"
+                            style="padding:9px 20px;background:#ef4444;color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer">
+                        <i class="fa-solid fa-xmark"></i> Xác nhận hủy
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    function openCancelModal(bookingId) {
+        document.getElementById('cancelForm').action = '/admin/restaurant-bookings/' + bookingId + '/cancel';
+        document.getElementById('cancelReason').value = '';
+        var modal = document.getElementById('cancelModal');
+        modal.style.display = 'flex';
+    }
+    function closeCancelModal() {
+        document.getElementById('cancelModal').style.display = 'none';
+    }
+    // Đóng modal khi click ra ngoài
+    document.getElementById('cancelModal').addEventListener('click', function(e) {
+        if (e.target === this) closeCancelModal();
+    });
+</script>
+</body>
+</html>

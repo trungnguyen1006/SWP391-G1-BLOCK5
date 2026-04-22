@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đặt bàn của tôi – Hoi An Hotel</title>
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        body { background: #f0f4f8; }
+        section { margin-top: 80px; padding: 30px 80px 80px; }
+        .page-header { margin-bottom: 28px; }
+        .page-header h1 { font-size: 1.8rem; color: #1e293b; margin: 0 0 6px; }
+        .page-header p  { color: #64748b; margin: 0; }
+
+        .booking-list { display: flex; flex-direction: column; gap: 16px; }
+        .booking-card {
+            background: #fff;
+            border-radius: 14px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.07);
+            padding: 20px 24px;
+            display: grid;
+            grid-template-columns: 80px 1fr auto;
+            gap: 16px;
+            align-items: center;
+        }
+        @media (max-width: 700px) { .booking-card { grid-template-columns: 1fr; } }
+        .restaurant-thumb {
+            width: 80px; height: 80px;
+            border-radius: 10px; object-fit: cover;
+        }
+        .booking-info h3 { margin: 0 0 6px; font-size: 1.05rem; color: #1e293b; }
+        .booking-meta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 6px; }
+        .meta-chip {
+            display: flex; align-items: center; gap: 5px;
+            font-size: .82rem; color: #64748b;
+        }
+        .meta-chip i { color: #6366f1; }
+
+        /* Status badges */
+        .badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: .8rem; font-weight: 600; }
+        .badge-pending   { background: #fef9c3; color: #854d0e; }
+        .badge-confirmed { background: #dcfce7; color: #166534; }
+        .badge-cancelled { background: #fee2e2; color: #991b1b; }
+
+        .actions { display: flex; flex-direction: column; gap: 8px; align-items: flex-end; }
+        .btn-detail {
+            padding: 7px 16px; background: #f1f5f9; color: #475569;
+            border-radius: 8px; text-decoration: none; font-size: .85rem;
+            display: inline-flex; align-items: center; gap: 6px;
+        }
+        .btn-cancel {
+            padding: 7px 16px;
+            background: #fee2e2; color: #b91c1c;
+            border: none; border-radius: 8px; cursor: pointer; font-size: .85rem;
+            display: inline-flex; align-items: center; gap: 6px;
+        }
+        .btn-cancel:hover { background: #fecaca; }
+        .btn-detail:hover { background: #e2e8f0; }
+
+        .empty-state {
+            text-align: center; padding: 60px 20px; color: #94a3b8;
+        }
+        .empty-state i { font-size: 3rem; margin-bottom: 12px; display: block; }
+        .empty-state a {
+            display: inline-block; margin-top: 16px;
+            padding: 10px 24px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: #fff; border-radius: 10px; text-decoration: none; font-weight: 600;
+        }
+        .alert-success {
+            background: #dcfce7; border: 1px solid #86efac;
+            color: #166534; padding: 12px 16px; border-radius: 8px;
+            margin-bottom: 18px; display: flex; align-items: center; gap: 8px;
+        }
+        .alert-error {
+            background: #fee2e2; border: 1px solid #fca5a5;
+            color: #b91c1c; padding: 12px 16px; border-radius: 8px;
+            margin-bottom: 18px; display: flex; align-items: center; gap: 8px;
+        }
+    </style>
+</head>
+<body>
+<div th:replace="fragments/header :: header"></div>
+
+<section>
+    <div class="page-header">
+        <h1><i class="fa-solid fa-calendar-days" style="color:#6366f1"></i> Đặt bàn của tôi</h1>
+        <p>Lịch sử và quản lý các đặt bàn của bạn</p>
+    </div>
+
+    <!-- Flash messages -->
+    <div class="alert-success" th:if="${success}">
+        <i class="fa-solid fa-circle-check"></i><span th:text="${success}"></span>
+    </div>
+    <div class="alert-error" th:if="${error}">
+        <i class="fa-solid fa-circle-exclamation"></i><span th:text="${error}"></span>
+    </div>
+
+    <!-- Empty state -->
+    <div class="empty-state" th:if="${#lists.isEmpty(bookings)}">
+        <i class="fa-regular fa-calendar-xmark"></i>
+        <p>Bạn chưa có đặt bàn nào.</p>
+        <a th:href="@{/restaurants}">Khám phá nhà hàng ngay</a>
+    </div>
+
+    <!-- Booking list -->
+    <div class="booking-list" th:if="${!#lists.isEmpty(bookings)}">
+        <div class="booking-card" th:each="b : ${bookings}">
+
+            <!-- Restaurant thumbnail -->
+            <img class="restaurant-thumb"
+                 th:src="${b.restaurant.imageUrl} ?: @{/images/placeholder-restaurant.svg}"
+                 th:alt="${b.restaurant.name}"
+                 onerror="this.onerror=null;this.src='/images/placeholder-restaurant.svg'"/>
+
+            <!-- Info -->
+            <div class="booking-info">
+                <h3 th:text="${b.restaurant.name}">Tên nhà hàng</h3>
+                <div class="booking-meta">
+                    <span class="meta-chip">
+                        <i class="fa-regular fa-calendar"></i>
+                        <span th:text="${#temporals.format(b.bookingDate, 'dd/MM/yyyy')}"></span>
+                    </span>
+                    <span class="meta-chip">
+                        <i class="fa-regular fa-clock"></i>
+                        <span th:text="${b.bookingShift.label}"></span>
+                    </span>
+                    <span class="meta-chip">
+                        <i class="fa-solid fa-users"></i>
+                        <span th:text="${b.numberOfGuests} + ' khách'"></span>
+                    </span>
+                    <span class="meta-chip" th:if="${b.specialRequest != null and !#strings.isEmpty(b.specialRequest)}">
+                        <i class="fa-regular fa-comment"></i>
+                        <span th:text="${b.specialRequest}"></span>
+                    </span>
+                </div>
+                <div style="margin-top:8px">
+                    <span class="badge badge-pending"   th:if="${b.status.name() == 'PENDING'}">Chờ xác nhận</span>
+                    <span class="badge badge-confirmed" th:if="${b.status.name() == 'CONFIRMED'}">Đã xác nhận</span>
+                    <span class="badge badge-cancelled" th:if="${b.status.name() == 'CANCELLED'}">Đã hủy</span>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="actions">
+                <a class="btn-detail" th:href="@{/restaurants/{id}(id=${b.restaurant.id})}">
+                    <i class="fa-solid fa-store"></i> Nhà hàng
+                </a>
+                <button th:if="${b.status.name() == 'PENDING'}"
+                        type="button" class="btn-cancel"
+                        th:onclick="|openCancelModal(${b.bookingId})|">
+                    <i class="fa-solid fa-xmark"></i> Hủy
+                </button>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<!-- ── Modal nhập lý do hủy ── -->
+<div id="cancelModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;align-items:center;justify-content:center">
+    <div style="background:#fff;border-radius:16px;padding:32px;width:100%;max-width:440px;margin:16px;box-shadow:0 20px 60px rgba(0,0,0,.2)">
+        <h3 style="margin:0 0 6px;font-size:1.1rem;color:#1e293b">
+            <i class="fa-solid fa-ban" style="color:#ef4444"></i> Hủy đặt bàn
+        </h3>
+        <p style="color:#64748b;font-size:.88rem;margin:0 0 18px">
+            Vui lòng cho chúng tôi biết lý do để cải thiện dịch vụ.
+        </p>
+        <form id="cancelForm" method="post">
+            <div style="margin-bottom:16px">
+                <label style="display:block;font-weight:600;font-size:.88rem;color:#374151;margin-bottom:6px">
+                    Lý do hủy <span style="color:#ef4444">*</span>
+                </label>
+                <textarea name="cancelReason" id="cancelReason" rows="3" required
+                          placeholder="Ví dụ: Thay đổi kế hoạch, bận việc đột xuất..."
+                          style="width:100%;padding:10px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.9rem;resize:vertical;box-sizing:border-box"
+                          onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e2e8f0'"></textarea>
+            </div>
+            <div style="display:flex;gap:10px;justify-content:flex-end">
+                <button type="button" onclick="closeCancelModal()"
+                        style="padding:9px 20px;background:#f1f5f9;color:#475569;border:none;border-radius:8px;font-weight:600;cursor:pointer">
+                    Đóng
+                </button>
+                <button type="submit"
+                        style="padding:9px 20px;background:#ef4444;color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer">
+                    <i class="fa-solid fa-xmark"></i> Xác nhận hủy
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openCancelModal(bookingId) {
+        document.getElementById('cancelForm').action = '/restaurants/booking/' + bookingId + '/cancel';
+        document.getElementById('cancelReason').value = '';
+        var modal = document.getElementById('cancelModal');
+        modal.style.display = 'flex';
+    }
+    function closeCancelModal() {
+        document.getElementById('cancelModal').style.display = 'none';
+    }
+    document.getElementById('cancelModal').addEventListener('click', function(e) {
+        if (e.target === this) closeCancelModal();
+    });
+</script>
+
+<div th:replace="fragments/footer :: footer"></div>
+</body>
+</html>

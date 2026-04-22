@@ -17,6 +17,12 @@ public interface UserRepository extends JpaRepository<User, Long> {
     boolean existsByUsername(String username);
     boolean existsByEmail(String email);
 
+    // Kiểm tra SĐT trùng (bỏ qua GUEST vì GUEST là tạm thời)
+    boolean existsByPhoneAndRoleNot(String phone, UserRole role);
+
+    // Kiểm tra SĐT trùng khi cập nhật — bỏ qua chính user đó và bỏ qua GUEST
+    boolean existsByPhoneAndIdNotAndRoleNot(String phone, Long id, UserRole role);
+
     Page<User> findByRoleNot(UserRole role, Pageable pageable);
     Page<User> findByRoleNotAndUsernameContainingIgnoreCaseOrRoleNotAndEmailContainingIgnoreCase(
             UserRole role1, String username, UserRole role2, String email, Pageable pageable);

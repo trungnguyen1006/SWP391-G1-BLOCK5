@@ -103,6 +103,19 @@
             </div>
         </div>
 
+        <!-- Đặt bàn CTA -->
+        <div style="margin:2rem 0;background:linear-gradient(135deg,#6366f1,#8b5cf6);border-radius:16px;padding:28px 32px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px">
+            <div>
+                <h2 style="color:#fff;margin:0 0 6px;font-size:1.4rem">Đặt bàn tại <span th:text="${restaurant.name}"></span></h2>
+                <p style="color:rgba(255,255,255,.8);margin:0;font-size:.95rem">Chọn ca, nhập số khách — đặt bàn chỉ trong 1 phút!</p>
+            </div>
+            <a th:href="@{/restaurants/{id}/booking(id=${restaurant.id})}"
+               style="display:inline-flex;align-items:center;gap:8px;padding:12px 28px;background:#fff;color:#6366f1;border-radius:10px;font-weight:700;text-decoration:none;font-size:1rem;white-space:nowrap;transition:opacity .2s"
+               onmouseover="this.style.opacity='.88'" onmouseout="this.style.opacity='1'">
+                <i class="fa-solid fa-calendar-check"></i> Đặt bàn ngay
+            </a>
+        </div>
+
         <h2>Đánh giá khách hàng</h2>
         <p>Đang cập nhật...</p>
     </div>

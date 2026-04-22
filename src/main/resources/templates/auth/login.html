@@ -179,7 +179,6 @@
 <section class="auth-card">
     <h1>Đăng nhập</h1>
     <div class="alert" th:if="${param.error}">Sai thông tin đăng nhập</div>
-    <div class="alert success" th:if="${success}" th:text="${success}"></div>
     <div class="alert success" th:if="${param.registered}">Đăng ký thành công, hãy đăng nhập</div>
     <form th:action="@{/login}" method="post" class="form">
         <label>Tên đăng nhập

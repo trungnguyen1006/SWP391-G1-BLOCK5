@@ -154,6 +154,8 @@
             }
         }
     </style>
+    <th:block layout:fragment="extra-css"></th:block>
+    <th:block layout:fragment="styles"></th:block>
 </head>
 <body>
 <div class="dashboard-container">
@@ -162,22 +164,28 @@
         <h1 class="dashboard-title">Receptionist Dashboard</h1>
 
         <nav class="navigation">
-            <a th:href="@{/reception}"
+            <a th:href="@{/reception}" id="nav-home"
                class="nav-item">
                 <i class="fas fa-home"></i>
                 <span>Dashboard</span>
             </a>
 
-            <a th:href="@{/reception/bookings}"
+            <a th:href="@{/reception/bookings}" id="nav-bookings"
                class="nav-item">
                 <i class="fas fa-list"></i>
                 <span>List Customer Booking</span>
             </a>
 
-            <a th:href="@{/reception/rooms}"
+            <a th:href="@{/reception/rooms}" id="nav-rooms"
                class="nav-item">
                 <i class="fas fa-users"></i>
                 <span>Update Status Room</span>
+            </a>
+
+            <a th:href="@{/reception/restaurant-bookings}" id="nav-restaurant-bookings"
+               class="nav-item">
+                <i class="fas fa-calendar-check"></i>
+                <span>Restaurant Bookings</span>
             </a>
 
             <a th:href="@{/logout}"
@@ -199,8 +207,27 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script layout:fragment="scripts">
-    <!-- Scripts từ page con -->
+<th:block layout:fragment="extra-js"></th:block>
+<th:block layout:fragment="scripts"></th:block>
+
+<script>
+    (function () {
+        var path = window.location.pathname;
+        var map = {
+            'nav-home':     ['/reception'],
+            'nav-bookings': ['/reception/bookings'],
+            'nav-rooms':                 ['/reception/rooms'],
+            'nav-restaurant-bookings':   ['/reception/restaurant-bookings']
+        };
+        Object.entries(map).forEach(function ([id, paths]) {
+            var el = document.getElementById(id);
+            if (!el) return;
+            var matched = paths.some(function (p) {
+                return p === '/reception' ? path === '/reception' : path.startsWith(p);
+            });
+            if (matched) el.classList.add('active');
+        });
+    })();
 </script>
 </body>
 </html>
