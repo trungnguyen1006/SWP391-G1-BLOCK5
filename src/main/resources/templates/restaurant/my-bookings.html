@@ -168,6 +168,7 @@
             Vui lòng cho chúng tôi biết lý do để cải thiện dịch vụ.
         </p>
         <form id="cancelForm" method="post">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
             <div style="margin-bottom:16px">
                 <label style="display:block;font-weight:600;font-size:.88rem;color:#374151;margin-bottom:6px">
                     Lý do hủy <span style="color:#ef4444">*</span>
