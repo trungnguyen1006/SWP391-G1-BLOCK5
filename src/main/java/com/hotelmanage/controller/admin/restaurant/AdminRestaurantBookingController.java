@@ -43,33 +43,6 @@ public class AdminRestaurantBookingController {
         return "admin/restaurant-booking/list";
     }
 
-    // ─────────────────────────────────────────────────────────────────
-    // XÁC NHẬN booking
-    // ─────────────────────────────────────────────────────────────────
-    @PostMapping("/{id}/confirm")
-    public String confirm(@PathVariable Long id, RedirectAttributes redirectAttributes) {
-        try {
-            bookingService.confirmBooking(id);
-            redirectAttributes.addFlashAttribute("success", "Đã xác nhận đặt bàn #" + id);
-        } catch (RuntimeException e) {
-            redirectAttributes.addFlashAttribute("error", e.getMessage());
-        }
-        return "redirect:/admin/restaurant-bookings";
-    }
-
-    // ─────────────────────────────────────────────────────────────────
-    // HỦY booking
-    // ─────────────────────────────────────────────────────────────────
-    @PostMapping("/{id}/cancel")
-    public String cancel(@PathVariable Long id,
-                         @RequestParam(required = false) String cancelReason,
-                         RedirectAttributes redirectAttributes) {
-        try {
-            bookingService.cancelBooking(id, cancelReason);
-            redirectAttributes.addFlashAttribute("success", "Đã hủy đặt bàn #" + id);
-        } catch (RuntimeException e) {
-            redirectAttributes.addFlashAttribute("error", e.getMessage());
-        }
-        return "redirect:/admin/restaurant-bookings";
-    }
+    // Restaurant booking confirmation and cancellation are restricted to receptionists only.
+    // Admins can view bookings but cannot confirm or cancel them.
 }
