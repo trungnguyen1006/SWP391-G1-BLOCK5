@@ -133,7 +133,7 @@ public class RestaurantBookingService {
     }
 
     // ─────────────────────────────────────────────────────────────────
-    // XÁC NHẬN booking — Admin / Receptionist
+    // XÁC NHẬN booking — Receptionist
     // ─────────────────────────────────────────────────────────────────
     public void confirmBooking(Long bookingId) {
         RestaurantBooking booking = findById(bookingId);
