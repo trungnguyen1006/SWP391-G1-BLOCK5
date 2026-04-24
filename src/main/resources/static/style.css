@@ -1,0 +1,81 @@
+body {
+    margin: 0;
+    font-family: "Segoe UI", sans-serif;
+    background: #f9f9f9;
+}
+
+.header {
+    background-color: #003366;
+    color: white;
+    text-align: center;
+    padding: 20px 0;
+}
+
+.amenities-section {
+    padding: 40px;
+}
+
+.amenities-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 25px;
+}
+
+.amenity-card {
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    padding: 15px;
+    text-align: center;
+    transition: transform 0.3s ease;
+}
+
+.amenity-card:hover {
+    transform: translateY(-6px);
+}
+
+.amenity-card img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    border-radius: 10px;
+}
+
+.amenity-card h3 {
+    margin-top: 12px;
+    color: #003366;
+}
+
+.amenity-card .desc {
+    color: #555;
+    font-size: 14px;
+    margin-top: 6px;
+}
+
+.amenity-card .time {
+    font-size: 13px;
+    color: #777;
+    margin: 5px 0;
+}
+
+.view-btn {
+    background-color: #003366;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 16px;
+    cursor: pointer;
+    margin-top: 8px;
+}
+
+.view-btn:hover {
+    background-color: #0059b3;
+}
+
+footer {
+    text-align: center;
+    padding: 10px 0;
+    color: #777;
+    background-color: #f1f1f1;
+    margin-top: 40px;
+}
