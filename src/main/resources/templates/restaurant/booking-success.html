@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đặt bàn thành công – Hoi An Hotel</title>
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        body { background: #f0f4f8; }
+        section { margin-top: 80px; padding: 40px 80px 80px; }
+        .success-wrapper {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 20px;
+            box-shadow: 0 8px 30px rgba(0,0,0,.1);
+            overflow: hidden;
+        }
+        .success-header {
+            background: linear-gradient(135deg, #10b981, #059669);
+            padding: 36px 32px 32px;
+            text-align: center;
+            color: #fff;
+        }
+        .success-icon {
+            width: 72px; height: 72px;
+            background: rgba(255,255,255,.25);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 16px;
+            font-size: 2rem;
+        }
+        .success-header h1 { margin: 0 0 8px; font-size: 1.7rem; }
+        .success-header p  { margin: 0; opacity: .9; font-size: .95rem; }
+
+        .success-body { padding: 32px; }
+        .detail-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        @media (max-width: 500px) { .detail-grid { grid-template-columns: 1fr; } }
+        .detail-item {
+            background: #f8fafc;
+            border-radius: 10px;
+            padding: 14px 16px;
+        }
+        .detail-item .label {
+            font-size: .78rem; font-weight: 700; text-transform: uppercase;
+            letter-spacing: .04em; color: #94a3b8; margin-bottom: 4px;
+        }
+        .detail-item .value {
+            font-size: 1rem; font-weight: 600; color: #1e293b;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 14px; border-radius: 20px;
+            font-size: .82rem; font-weight: 600;
+            background: #fef9c3; color: #854d0e;
+        }
+        .actions { display: flex; gap: 12px; flex-wrap: wrap; }
+        .btn-primary-action {
+            flex: 1; padding: 12px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: #fff; border: none; border-radius: 10px;
+            font-size: .95rem; font-weight: 600; cursor: pointer;
+            text-align: center; text-decoration: none;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .btn-secondary-action {
+            flex: 1; padding: 12px;
+            background: #f1f5f9; color: #475569;
+            border: none; border-radius: 10px;
+            font-size: .95rem; font-weight: 600; cursor: pointer;
+            text-align: center; text-decoration: none;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .btn-primary-action:hover { opacity: .88; }
+        .btn-secondary-action:hover { background: #e2e8f0; }
+        .note-box {
+            background: #eff6ff; border: 1px solid #bfdbfe;
+            border-radius: 10px; padding: 14px 16px;
+            color: #1e40af; font-size: .88rem;
+            display: flex; gap: 10px; align-items: flex-start;
+            margin-bottom: 24px;
+        }
+    </style>
+</head>
+<body>
+<div th:replace="fragments/header :: header"></div>
+
+<section>
+    <div class="success-wrapper">
+        <!-- Header -->
+        <div class="success-header">
+            <div class="success-icon">
+                <i class="fa-solid fa-check"></i>
+            </div>
+            <h1>Đặt bàn thành công!</h1>
+            <p>Cảm ơn bạn. Chúng tôi sẽ liên hệ xác nhận sớm nhất.</p>
+        </div>
+
+        <!-- Body -->
+        <div class="success-body">
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <div class="label">Mã đặt bàn</div>
+                    <div class="value" th:text="'#' + ${booking.bookingId}">#0</div>
+                </div>
+                <div class="detail-item">
+                    <div class="label">Trạng thái</div>
+                    <div class="value"><span class="status-badge">Chờ xác nhận</span></div>
+                </div>
+                <div class="detail-item">
+                    <div class="label">Nhà hàng</div>
+                    <div class="value" th:text="${booking.restaurant.name}">—</div>
+                </div>
+                <div class="detail-item">
+                    <div class="label">Ngày</div>
+                    <div class="value" th:text="${#temporals.format(booking.bookingDate, 'dd/MM/yyyy')}">—</div>
+                </div>
+                <div class="detail-item">
+                    <div class="label">Ca</div>
+                    <div class="value" th:text="${booking.bookingShift.label}">—</div>
+                </div>
+                <div class="detail-item">
+                    <div class="label">Số khách</div>
+                    <div class="value" th:text="${booking.numberOfGuests} + ' người'">—</div>
+                </div>
+                <div class="detail-item" th:if="${booking.specialRequest != null and !#strings.isEmpty(booking.specialRequest)}" style="grid-column:span 2">
+                    <div class="label">Yêu cầu đặc biệt</div>
+                    <div class="value" th:text="${booking.specialRequest}">—</div>
+                </div>
+            </div>
+
+            <div class="note-box">
+                <i class="fa-solid fa-circle-info" style="margin-top:2px"></i>
+                <span>Nhà hàng sẽ xác nhận đặt bàn của bạn qua email hoặc điện thoại trong vòng 30 phút. Nếu cần hỗ trợ, liên hệ <strong th:text="${booking.restaurant.contactInfo} ?: 'lễ tân khách sạn'"></strong>.</span>
+            </div>
+
+            <div class="actions">
+                <a class="btn-primary-action" th:href="@{/restaurants/my-bookings}">
+                    <i class="fa-solid fa-list"></i> Xem đặt bàn của tôi
+                </a>
+                <a class="btn-secondary-action" th:href="@{/restaurants}">
+                    <i class="fa-solid fa-store"></i> Khám phá nhà hàng khác
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div th:replace="fragments/footer :: footer"></div>
+</body>
+</html>

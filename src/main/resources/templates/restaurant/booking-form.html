@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="'Đặt bàn – ' + ${restaurant.name} + ' – Hoi An Hotel'">Đặt bàn</title>
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        body { background: #f0f4f8; }
+        section { margin-top: 80px; padding: 30px 80px 60px; }
+        .booking-wrapper {
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            gap: 32px;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        @media (max-width: 860px) { .booking-wrapper { grid-template-columns: 1fr; } }
+
+        /* --- Restaurant card --- */
+        .rest-card {
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,.1);
+            background: #fff;
+        }
+        .rest-card img {
+            width: 100%; height: 200px; object-fit: cover;
+        }
+        .rest-card-body { padding: 20px; }
+        .rest-card-body h2 { margin: 0 0 10px; font-size: 1.4rem; color: #1e293b; }
+        .meta { display: flex; align-items: center; gap: 8px; color: #64748b; font-size: .9rem; margin: 5px 0; }
+        .meta i { color: #f9a825; width: 16px; }
+        .shift-list { margin-top: 12px; }
+        .shift-item {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: #f1f5f9; border-radius: 20px;
+            padding: 4px 12px; font-size: .82rem; margin: 3px 3px 3px 0;
+            color: #334155;
+        }
+
+        /* --- Form card --- */
+        .form-card {
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,.1);
+            padding: 32px;
+        }
+        .form-card h3 { margin: 0 0 24px; font-size: 1.3rem; color: #1e293b; }
+        .form-group { margin-bottom: 18px; }
+        .form-group label {
+            display: block; margin-bottom: 6px;
+            font-weight: 600; font-size: .9rem; color: #374151;
+        }
+        .form-group label .required { color: #ef4444; }
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%; padding: 10px 14px;
+            border: 1.5px solid #e2e8f0; border-radius: 8px;
+            font-size: .95rem; transition: border-color .2s;
+            box-sizing: border-box;
+        }
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none; border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99,102,241,.12);
+        }
+        .form-group textarea { resize: vertical; min-height: 80px; }
+        .section-label {
+            font-size: .82rem; font-weight: 700; letter-spacing: .05em;
+            text-transform: uppercase; color: #6366f1; margin: 22px 0 12px;
+            padding-bottom: 6px; border-bottom: 2px solid #e0e7ff;
+        }
+        .btn-submit {
+            width: 100%; padding: 13px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: #fff; border: none; border-radius: 10px;
+            font-size: 1rem; font-weight: 600; cursor: pointer;
+            transition: opacity .2s;
+            margin-top: 8px;
+        }
+        .btn-submit:hover { opacity: .88; }
+        .alert-error {
+            background: #fee2e2; border: 1px solid #fca5a5;
+            color: #b91c1c; padding: 12px 16px; border-radius: 8px;
+            margin-bottom: 18px; display: flex; align-items: center; gap: 8px;
+        }
+        .alert-info {
+            background: #eff6ff; border: 1px solid #93c5fd;
+            color: #1d4ed8; padding: 12px 16px; border-radius: 8px;
+            margin-bottom: 18px; font-size: .9rem;
+        }
+        .back-link {
+            display: inline-flex; align-items: center; gap: 6px;
+            color: #6366f1; text-decoration: none; font-size: .9rem;
+            margin-bottom: 20px;
+        }
+        .back-link:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+<div th:replace="fragments/header :: header"></div>
+
+<section>
+    <a class="back-link" th:href="@{/restaurants/{id}(id=${restaurant.id})}">
+        <i class="fa-solid fa-arrow-left"></i> Quay lại nhà hàng
+    </a>
+
+    <div class="booking-wrapper">
+
+        <!-- ── Left: Restaurant info ── -->
+        <div>
+            <div class="rest-card">
+                <img th:src="${restaurant.imageUrl} ?: @{/images/placeholder-restaurant.svg}"
+                     th:alt="${restaurant.name}"
+                     onerror="this.onerror=null;this.src='/images/placeholder-restaurant.svg'"/>
+                <div class="rest-card-body">
+                    <h2 th:text="${restaurant.name}">Tên nhà hàng</h2>
+                    <div class="meta"><i class="fa-solid fa-utensils"></i><span th:text="${restaurant.cuisineType} ?: 'Đang cập nhật'"></span></div>
+                    <div class="meta"><i class="fa-regular fa-clock"></i><span th:text="${restaurant.openingHours} ?: 'Đang cập nhật'"></span></div>
+                    <div class="meta"><i class="fa-solid fa-wallet"></i><span th:text="${restaurant.priceRange} ?: 'Đang cập nhật'"></span></div>
+                    <div class="meta"><i class="fa-solid fa-phone"></i><span th:text="${restaurant.contactInfo} ?: 'Đang cập nhật'"></span></div>
+
+                    <div class="shift-list" th:if="${availableShifts != null and !#lists.isEmpty(availableShifts)}">
+                        <p style="font-size:.85rem;font-weight:600;color:#475569;margin:12px 0 6px">Ca phục vụ:</p>
+                        <span class="shift-item" th:each="s : ${availableShifts}">
+                            <i class="fa-regular fa-sun" style="color:#f59e0b"></i>
+                            <span th:text="${s.label}"></span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Right: Booking form ── -->
+        <div>
+            <div class="form-card">
+                <h3><i class="fa-solid fa-utensils" style="color:#6366f1"></i> Đặt bàn</h3>
+
+                <!-- Error flash -->
+                <div class="alert-error" th:if="${error}">
+                    <i class="fa-solid fa-circle-exclamation"></i>
+                    <span th:text="${error}"></span>
+                </div>
+
+                <!-- No shifts available -->
+                <div class="alert-error" th:if="${#lists.isEmpty(availableShifts)}">
+                    <i class="fa-solid fa-ban"></i> Nhà hàng chưa mở ca đặt bàn nào.
+                </div>
+
+                <form th:if="${!#lists.isEmpty(availableShifts)}"
+                      th:action="@{/restaurants/{id}/booking(id=${restaurant.id})}"
+                      method="post">
+
+                    <!-- ── Booking details ── -->
+                    <p class="section-label">Thông tin đặt bàn</p>
+
+                    <div class="form-group">
+                        <label>Ngày đặt <span class="required">*</span></label>
+                        <input type="date" name="bookingDate" required
+                               th:min="${minDate}"
+                               th:value="${minDate}"/>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Ca <span class="required">*</span></label>
+                        <select name="shift" required>
+                            <option value="">-- Chọn ca --</option>
+                            <option th:each="s : ${availableShifts}"
+                                    th:value="${s.name()}"
+                                    th:text="${s.label}"></option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Số khách <span class="required">*</span></label>
+                        <input type="number" name="numberOfGuests" min="1" max="50"
+                               value="2" required/>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Yêu cầu đặc biệt</label>
+                        <textarea name="specialRequest" placeholder="Ví dụ: bàn riêng, sinh nhật, dị ứng thực phẩm..."></textarea>
+                    </div>
+
+                    <!-- ── Guest info (only if not logged in) ── -->
+                    <div th:if="${currentUser == null}">
+                        <p class="section-label">Thông tin liên hệ</p>
+                        <div class="alert-info">
+                            <i class="fa-solid fa-circle-info"></i>
+                            Bạn chưa đăng nhập.
+                            <a th:href="@{/login}" style="color:#1d4ed8;font-weight:600">Đăng nhập</a>
+                            để điền nhanh thông tin, hoặc tiếp tục đặt bàn bên dưới.
+                        </div>
+
+                        <div class="form-group">
+                            <label>Họ tên <span class="required">*</span></label>
+                            <input type="text" name="guestName" placeholder="Nguyễn Văn A" required/>
+                        </div>
+                        <div class="form-group">
+                            <label>Số điện thoại <span class="required">*</span></label>
+                            <input type="tel" name="guestPhone" placeholder="0901234567" required/>
+                        </div>
+                        <div class="form-group">
+                            <label>Email <span class="required">*</span></label>
+                            <input type="email" name="guestEmail" placeholder="email@example.com" required/>
+                        </div>
+                    </div>
+
+                    <!-- ── Logged-in user info (readonly) ── -->
+                    <div th:if="${currentUser != null}">
+                        <p class="section-label">Thông tin tài khoản</p>
+                        <div class="alert-info">
+                            <i class="fa-solid fa-user-check"></i>
+                            Đặt bàn với tài khoản <strong th:text="${currentUser.username}"></strong>
+                            (<span th:text="${currentUser.email}"></span>)
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-submit">
+                        <i class="fa-solid fa-calendar-check"></i> Xác nhận đặt bàn
+                    </button>
+                </form>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<div th:replace="fragments/footer :: footer"></div>
+</body>
+</html>
