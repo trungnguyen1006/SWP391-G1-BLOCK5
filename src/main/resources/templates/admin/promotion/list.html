@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/admin-layout}">
+<head>
+    <title>Quản lý Mã Giảm Giá</title>
+</head>
+
+<th:block layout:fragment="extra-css">
+    <style>
+        .badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .badge-active {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .badge-inactive {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .badge-expired {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .code-cell {
+            font-family: 'Courier New', monospace;
+            font-weight: 600;
+            color: #e74c3c;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #7f8c8d;
+            font-size: 16px;
+        }
+    </style>
+</th:block>
+
+<body>
+<div layout:fragment="content">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Quản lý Mã Giảm Giá</h2>
+        <a th:href="@{/admin/promotions/create}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Tạo Mã Giảm Giá
+        </a>
+    </div>
+
+    <div th:if="${success}" class="alert alert-success alert-dismissible fade show">
+        <span th:text="${success}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show">
+        <span th:text="${error}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <table class="table table-hover" th:if="${promotions != null && !promotions.isEmpty()}">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Mã Code</th>
+                    <th>Giảm Giá</th>
+                    <th>Giới Hạn/Đã Dùng</th>
+                    <th>Thời Gian</th>
+                    <th>Trạng Thái</th>
+                    <th>Thao Tác</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="promotion : ${promotions}">
+                    <td th:text="${promotion.promotionId}"></td>
+                    <td class="code-cell" th:text="${promotion.code}"></td>
+                    <td th:text="${#numbers.formatDecimal(promotion.discountAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'"></td>
+                    <td>
+                        <span th:text="${promotion.usageLimit != null ? promotion.usageLimit : 'Không giới hạn'}"></span>
+                        /
+                        <span th:text="${promotion.usedCount}"></span>
+                    </td>
+                    <td>
+                        <div th:text="${#temporals.format(promotion.startDate, 'dd/MM/yyyy')}"></div>
+                        <div th:text="'→ ' + ${#temporals.format(promotion.endDate, 'dd/MM/yyyy')}"></div>
+                    </td>
+                    <td>
+                        <span th:if="${promotion.isActive && #temporals.createToday().isAfter(promotion.endDate)}"
+                              class="badge badge-expired">
+                            Hết hạn
+                        </span>
+                        <span th:if="${promotion.isActive && !#temporals.createToday().isAfter(promotion.endDate)}"
+                              class="badge badge-active">
+                            Hoạt động
+                        </span>
+                        <span th:unless="${promotion.isActive}"
+                              class="badge badge-inactive">
+                            Vô hiệu hóa
+                        </span>
+                    </td>
+                    <td>
+                        <div class="actions">
+                            <a th:href="@{/admin/promotions/edit/{id}(id=${promotion.promotionId})}"
+                               class="btn btn-sm btn-warning">
+                                <i class="bi bi-pencil"></i> Sửa
+                            </a>
+
+                            <form th:if="${promotion.isActive}"
+                                  th:action="@{/admin/promotions/deactivate/{id}(id=${promotion.promotionId})}"
+                                  method="post"
+                                  style="display: inline;">
+                                <button type="submit" class="btn btn-sm btn-danger"
+                                        onclick="return confirm('Bạn có chắc muốn vô hiệu hóa mã này?')">
+                                    <i class="bi bi-x-circle"></i> Vô hiệu
+                                </button>
+                            </form>
+
+                            <form th:unless="${promotion.isActive}"
+                                  th:action="@{/admin/promotions/activate/{id}(id=${promotion.promotionId})}"
+                                  method="post"
+                                  style="display: inline;">
+                                <button type="submit" class="btn btn-sm btn-success">
+                                    <i class="bi bi-check-circle"></i> Kích hoạt
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+
+            <div th:if="${promotions == null || promotions.isEmpty()}" class="no-data">
+                <i class="bi bi-info-circle"></i> Chưa có mã giảm giá nào. Hãy tạo mã giảm giá đầu tiên!
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
