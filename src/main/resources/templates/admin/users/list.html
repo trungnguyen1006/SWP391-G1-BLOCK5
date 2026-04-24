@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/admin-layout}">
+<head>
+    <title>Quản lý User - Hoi An Hotel</title>
+    <th:block layout:fragment="extra-css">
+        <style>
+            .table {
+                border-collapse: collapse;
+                width: 100%;
+                background: white;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            }
+            .table th, .table td {
+                border: 1px solid #ddd;
+                padding: 12px;
+                text-align: left;
+            }
+            .table th {
+                background-color: #f8f9fa;
+                font-weight: 600;
+            }
+            .btn {
+                display: inline-block;
+                padding: 6px 12px;
+                margin: 2px;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                text-decoration: none;
+                color: #333;
+                background: #fff;
+                cursor: pointer;
+                transition: all 0.3s ease;
+            }
+            .btn:hover {
+                background: #f8f9fa;
+            }
+            .btn.primary {
+                background: #f9c74f;
+                color: #000;
+                border: none;
+            }
+            .btn.primary:hover {
+                background: #f8b62b;
+            }
+            .search-form {
+                background: white;
+                padding: 20px;
+                border-radius: 8px;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                margin-bottom: 20px;
+            }
+            .search-form input {
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                padding: 8px 12px;
+                width: 100%;
+            }
+            .badge {
+                padding: 4px 8px;
+                border-radius: 4px;
+                font-size: 12px;
+                font-weight: 500;
+            }
+            .badge-customer { background: #d1ecf1; color: #0c5460; }
+            .badge-receptionist { background: #d4edda; color: #155724; }
+            .badge-admin { background: #f8d7da; color: #721c24; }
+            .badge-active { background: #d4edda; color: #155724; }
+            .badge-inactive { background: #f8d7da; color: #721c24; }
+        </style>
+    </th:block>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3">Quản lý User</h1>
+        <a class="btn primary" th:href="@{/admin/users/create}">
+            <i class="fa-solid fa-plus"></i> Thêm User
+        </a>
+    </div>
+
+    <form method="get" class="search-form">
+        <div class="input-group">
+            <input type="text" name="q" th:value="${q}" class="form-control" placeholder="Tìm theo tên hoặc email..."/>
+            <button class="btn btn-primary" type="submit">
+                <i class="fa-solid fa-magnifying-glass"></i> Tìm kiếm
+            </button>
+        </div>
+    </form>
+
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+            <tr>
+                <th>Avatar</th>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="u : ${page}">
+                <td>
+                    <img th:src="${u.avatarUrl} ?: '/images/avatar-placeholder.svg'"
+                         alt="avatar"
+                         style="width:48px;height:48px;object-fit:cover;border-radius:50%"
+                         onerror="this.onerror=null; this.src='/images/avatar-placeholder.svg'"/>
+                </td>
+                <td th:text="${u.username}"></td>
+                <td th:text="${u.email}"></td>
+                <td>
+                    <span th:if="${u.role?.name() == 'CUSTOMER'}" class="badge badge-customer">CUSTOMER</span>
+                    <span th:if="${u.role?.name() == 'RECEPTIONIST'}" class="badge badge-receptionist">RECEPTIONIST</span>
+                    <span th:if="${u.role?.name() == 'ADMIN'}" class="badge badge-admin">ADMIN</span>
+                </td>
+                <td>
+                    <span th:if="${u.status?.name() == 'ACTIVE'}" class="badge badge-active">ACTIVE</span>
+                    <span th:if="${u.status?.name() == 'INACTIVE'}" class="badge badge-inactive">INACTIVE</span>
+                </td>
+                <td>
+                    <div class="btn-group">
+                        <a class="btn" th:href="@{/admin/users/{id}/view(id=${u.id})}">
+                            <i class="fa-regular fa-eye"></i>
+                        </a>
+                        <a class="btn" th:href="@{/admin/users/{id}/edit(id=${u.id})}">
+                            <i class="fa-regular fa-pen-to-square"></i>
+                        </a>
+                        <form th:if="${u.status?.name() == 'ACTIVE'}" th:action="@{/admin/users/{id}/deactivate(id=${u.id})}" method="post" style="display:inline">
+                            <button class="btn" type="submit" onclick="return confirm('Vô hiệu hóa user?')" style="background:#ffc107;color:#000;">
+                                <i class="fa-solid fa-ban"></i>
+                            </button>
+                        </form>
+                        <form th:if="${u.status?.name() == 'INACTIVE'}" th:action="@{/admin/users/{id}/activate(id=${u.id})}" method="post" style="display:inline">
+                            <button class="btn" type="submit" onclick="return confirm('Kích hoạt user?')" style="background:#28a745;color:#fff;">
+                                <i class="fa-solid fa-check"></i>
+                            </button>
+                        </form>
+                        <form th:action="@{/admin/users/{id}/delete(id=${u.id})}" method="post" style="display:inline">
+                            <button class="btn text-danger" type="submit" onclick="return confirm('Xóa user?')">
+                                <i class="fa-regular fa-trash-can"></i>
+                            </button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <nav aria-label="Page navigation" class="mt-4">
+        <ul class="pagination justify-content-center">
+            <li class="page-item" th:classappend="${page.number == 0} ? 'disabled'">
+                <a class="page-link" th:href="@{/admin/users(page=${page.number - 1}, q=${q})}">«</a>
+            </li>
+            <li class="page-item" th:each="p : ${#numbers.sequence(1, page.totalPages)}"
+                th:classappend="${p == page.number + 1} ? 'active'">
+                <a class="page-link" th:href="@{/admin/users(page=${p - 1}, q=${q})}" th:text="${p}"></a>
+            </li>
+            <li class="page-item" th:classappend="${page.number + 1 >= page.totalPages} ? 'disabled'">
+                <a class="page-link" th:href="@{/admin/users(page=${page.number + 1}, q=${q})}">»</a>
+            </li>
+        </ul>
+    </nav>
+</div>
+</body>
+</html>

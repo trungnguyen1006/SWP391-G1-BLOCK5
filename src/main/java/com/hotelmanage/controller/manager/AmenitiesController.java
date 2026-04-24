@@ -1,10 +1,9 @@
-package com.hotelmanage.controller.admin;
+package com.hotelmanage.controller.manager;
 
 import java.util.Map;
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import com.hotelmanage.entity.amenity.Amenity;
-import com.hotelmanage.entity.room.Room;
 import com.hotelmanage.service.amenity.AmenityService;
 import org.springframework.web.multipart.MultipartFile;
 import jakarta.validation.Valid;
@@ -20,7 +19,7 @@ import java.util.List;
 
 @Slf4j
 @Controller("adminAmenitiesController")
-@RequestMapping("/admin/amenities")
+@RequestMapping("/manager/amenities")
 @RequiredArgsConstructor
 public class AmenitiesController {
     private final AmenityService amenityService;
@@ -30,13 +29,13 @@ public class AmenitiesController {
     public String listAmenities(Model model) {
         List<Amenity> amenities = amenityService.findAll();
         model.addAttribute("amenities", amenities);
-        return "admin/amenity/list";
+        return "manager/amenity/list";
     }
 
     @GetMapping("/create")
     public String showCreateForm(Model model) {
         model.addAttribute("amenity", new Amenity());
-        return "admin/amenity/form";
+        return "manager/amenity/form";
     }
 
     @PostMapping("/create")
@@ -64,15 +63,15 @@ public class AmenitiesController {
                 //save to db
                 amenityService.save(amenity);
                 redirectAttributes.addFlashAttribute("success", "Thêm tiện nghi thành công!");
-                return "redirect:/admin/amenities";
+                return "redirect:/manager/amenities";
             } else {
                 redirectAttributes.addFlashAttribute("error",
                         "Lỗi khi upload ảnh");
-                return "redirect:/admin/amenities/create";
+                return "redirect:/manager/amenities/create";
             }
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Lỗi: " + e.getMessage());
-            return "redirect:/admin/amenities/create";
+            return "redirect:/manager/amenities/create";
         }
     }
 
@@ -80,7 +79,7 @@ public class AmenitiesController {
     public String showEditForm(@PathVariable Integer id, Model model) {
         Amenity amenity = amenityService.findById(id);
         model.addAttribute("amenity", amenity);
-        return "admin/amenity/form";
+        return "manager/amenity/form";
     }
 
     @PostMapping("/update/{id}")
@@ -110,17 +109,17 @@ public class AmenitiesController {
                 amenity.setAmenityId(id);
                 amenityService.update(amenity);
                 redirectAttributes.addFlashAttribute("success", "Cập nhật tiện nghi thành công!");
-                return "redirect:/admin/amenities";
+                return "redirect:/manager/amenities";
             } else {
                 redirectAttributes.addFlashAttribute("error",
                         "Lỗi khi upload ảnh");
-                return "redirect:/admin/amenities/create";
+                return "redirect:/manager/amenities/create";
             }
 
 
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Lỗi: " + e.getMessage());
-            return "redirect:/admin/amenities/edit/" + id;
+            return "redirect:/manager/amenities/edit/" + id;
         }
     }
 
@@ -133,6 +132,6 @@ public class AmenitiesController {
         } catch (RuntimeException e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
         }
-        return "redirect:/admin/amenities";
+        return "redirect:/manager/amenities";
     }
 }
