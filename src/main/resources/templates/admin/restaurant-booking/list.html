@@ -11,9 +11,9 @@
     <!-- Header -->
     <div style="margin-bottom:24px">
         <h2 style="margin:0 0 4px;font-size:1.6rem;color:#1e293b">
-            <i class="fa-solid fa-utensils" style="color:#6366f1"></i> Quản lý đặt bàn nhà hàng
+            <i class="fa-solid fa-utensils" style="color:#6366f1"></i> Xem đặt bàn nhà hàng
         </h2>
-        <p style="margin:0;color:#64748b">Xem, xác nhận hoặc hủy đặt bàn của khách</p>
+        <p style="margin:0;color:#64748b">Xem danh sách đặt bàn của khách (Quản lý đặt bàn được thực hiện tại quầy tiếp tân)</p>
     </div>
 
     <!-- Flash messages -->
@@ -125,24 +125,8 @@
                     th:text="${#temporals.format(b.createdAt, 'dd/MM HH:mm')}"></td>
 
                 <td style="padding:12px 16px;text-align:center;white-space:nowrap">
-                    <!-- Confirm button (only PENDING) -->
-                    <form th:if="${b.status.name() == 'PENDING'}"
-                          th:action="@{/admin/restaurant-bookings/{id}/confirm(id=${b.bookingId})}"
-                          method="post" style="display:inline">
-                        <button type="submit"
-                                style="padding:5px 12px;background:#dcfce7;color:#166534;border:none;border-radius:6px;cursor:pointer;font-size:.82rem;font-weight:600"
-                                onclick="return confirm('Xác nhận đặt bàn #' + [[${b.bookingId}]] + '?')">
-                            <i class="fa-solid fa-check"></i> Xác nhận
-                        </button>
-                    </form>
-                    <!-- Cancel button → mở modal nhập lý do -->
-                    <button th:if="${b.status.name() == 'PENDING' or b.status.name() == 'CONFIRMED'}"
-                            type="button"
-                            style="padding:5px 12px;background:#fee2e2;color:#b91c1c;border:none;border-radius:6px;cursor:pointer;font-size:.82rem;font-weight:600;margin-left:4px"
-                            th:onclick="|openCancelModal(${b.bookingId})|">
-                        <i class="fa-solid fa-xmark"></i> Hủy
-                    </button>
-                    <span th:if="${b.status.name() == 'CANCELLED'}" style="color:#cbd5e1;font-size:.82rem">—</span>
+                    <!-- Admin can view only - booking management is restricted to receptionists -->
+                    <span style="color:#cbd5e1;font-size:.82rem">Quản lý tại <br/>quầy tiếp tân</span>
                 </td>
             </tr>
             <tr th:if="${bookingPage.totalElements == 0}">
@@ -174,56 +158,7 @@
         Trang <strong th:text="${bookingPage.number + 1}"></strong>/<strong th:text="${bookingPage.totalPages}"></strong>
     </p>
 
-    <!-- ── Modal nhập lý do hủy ── -->
-    <div id="cancelModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;align-items:center;justify-content:center">
-        <div style="background:#fff;border-radius:16px;padding:32px;width:100%;max-width:460px;box-shadow:0 20px 60px rgba(0,0,0,.2)">
-            <h3 style="margin:0 0 6px;font-size:1.1rem;color:#1e293b">
-                <i class="fa-solid fa-ban" style="color:#ef4444"></i> Hủy đặt bàn
-            </h3>
-            <p style="color:#64748b;font-size:.88rem;margin:0 0 18px">
-                Lý do sẽ được gửi đến email khách hàng.
-            </p>
-            <form id="cancelForm" method="post">
-                <input type="hidden" name="_csrf" th:value="${_csrf.token}"/>
-                <div style="margin-bottom:16px">
-                    <label style="display:block;font-weight:600;font-size:.88rem;color:#374151;margin-bottom:6px">
-                        Lý do hủy <span style="color:#ef4444">*</span>
-                    </label>
-                    <textarea name="cancelReason" id="cancelReason" rows="3" required
-                              placeholder="Ví dụ: Nhà hàng hết chỗ, sự cố kỹ thuật..."
-                              style="width:100%;padding:10px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.9rem;resize:vertical;box-sizing:border-box"
-                              onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e2e8f0'"></textarea>
-                </div>
-                <div style="display:flex;gap:10px;justify-content:flex-end">
-                    <button type="button" onclick="closeCancelModal()"
-                            style="padding:9px 20px;background:#f1f5f9;color:#475569;border:none;border-radius:8px;font-weight:600;cursor:pointer">
-                        Đóng
-                    </button>
-                    <button type="submit"
-                            style="padding:9px 20px;background:#ef4444;color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer">
-                        <i class="fa-solid fa-xmark"></i> Xác nhận hủy
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
+    <!-- Modal and scripts removed - booking management restricted to receptionists only -->
 
-</div>
-
-<script>
-    function openCancelModal(bookingId) {
-        document.getElementById('cancelForm').action = '/admin/restaurant-bookings/' + bookingId + '/cancel';
-        document.getElementById('cancelReason').value = '';
-        var modal = document.getElementById('cancelModal');
-        modal.style.display = 'flex';
-    }
-    function closeCancelModal() {
-        document.getElementById('cancelModal').style.display = 'none';
-    }
-    // Đóng modal khi click ra ngoài
-    document.getElementById('cancelModal').addEventListener('click', function(e) {
-        if (e.target === this) closeCancelModal();
-    });
-</script>
 </body>
 </html>

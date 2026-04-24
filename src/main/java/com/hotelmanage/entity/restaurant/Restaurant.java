@@ -53,8 +53,33 @@ public class Restaurant {
     @Column(name = "contact_info", length = 255)
     String contactInfo;
 
+    // ── Giới hạn booking mỗi ca ──────────────────────────────────────
+    @Column(name = "max_tables", nullable = false)
+    @Builder.Default
+    Integer maxTables = 10;
+
+    // ── Ca hoạt động ─────────────────────────────────────────────────
+    @Column(name = "has_morning", nullable = false)
+    @Builder.Default
+    Boolean hasMorning = false;   // 07:00 – 10:00
+
+    @Column(name = "has_lunch", nullable = false)
+    @Builder.Default
+    Boolean hasLunch = false;     // 11:00 – 14:00
+
+    @Column(name = "has_afternoon", nullable = false)
+    @Builder.Default
+    Boolean hasAfternoon = false; // 14:00 – 17:00
+
+    @Column(name = "has_dinner", nullable = false)
+    @Builder.Default
+    Boolean hasDinner = false;    // 18:00 – 22:00
+
     @OneToMany(mappedBy = "restaurant")
     Set<Menu> menus = new HashSet<>();
+
+    @OneToMany(mappedBy = "restaurant")
+    Set<RestaurantBooking> restaurantBookings = new HashSet<>();
 
     @Column(name = "deleted_at")
     LocalDateTime deletedAt;

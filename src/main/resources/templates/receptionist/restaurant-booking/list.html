@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/reception-layout}">
+<head>
+    <title>Đặt bàn nhà hàng</title>
+</head>
+<body>
+<div layout:fragment="content">
+
+    <!-- Header -->
+    <div class="content-header mb-4">
+        <h2 class="welcome-text">
+            <i class="fa-solid fa-utensils"></i> Quản lý đặt bàn nhà hàng
+        </h2>
+        <p class="welcome-subtitle">Xem, xác nhận hoặc hủy đặt bàn của khách</p>
+    </div>
+
+    <!-- Flash messages -->
+    <div th:if="${success}" class="alert alert-success d-flex align-items-center gap-2 mb-3">
+        <i class="fa-solid fa-circle-check"></i><span th:text="${success}"></span>
+    </div>
+    <div th:if="${error}" class="alert alert-danger d-flex align-items-center gap-2 mb-3">
+        <i class="fa-solid fa-circle-exclamation"></i><span th:text="${error}"></span>
+    </div>
+
+    <!-- Filter form -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" th:action="@{/reception/restaurant-bookings}"
+                  class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">Trạng thái</label>
+                    <select name="status" class="form-select">
+                        <option value="">-- Tất cả --</option>
+                        <option th:each="s : ${statusList}"
+                                th:value="${s.name()}"
+                                th:text="${s.name() == 'PENDING' ? 'Chờ xác nhận' : (s.name() == 'CONFIRMED' ? 'Đã xác nhận' : 'Đã hủy')}"
+                                th:selected="${selectedStatus != null and selectedStatus.name() == s.name()}">
+                        </option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Nhà hàng</label>
+                    <select name="restaurantId" class="form-select">
+                        <option value="">-- Tất cả --</option>
+                        <option th:each="r : ${restaurants}"
+                                th:value="${r.id}"
+                                th:text="${r.name}"
+                                th:selected="${selectedRestaurant != null and selectedRestaurant == r.id}">
+                        </option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-funnel"></i> Lọc
+                    </button>
+                </div>
+                <div class="col-md-2">
+                    <a th:href="@{/reception/restaurant-bookings}" class="btn btn-outline-secondary w-100">
+                        <i class="bi bi-x-circle"></i> Xóa lọc
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Table -->
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                    <tr>
+                        <th>#</th>
+                        <th>Nhà hàng</th>
+                        <th>Khách hàng</th>
+                        <th>Ngày</th>
+                        <th>Ca</th>
+                        <th class="text-center">Số khách</th>
+                        <th>Trạng thái</th>
+                        <th class="text-center">Ngày tạo</th>
+                        <th class="text-center">Thao tác</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="b : ${bookingPage.content}">
+
+                        <td class="text-muted" th:text="'#' + ${b.bookingId}"></td>
+
+                        <td>
+                            <span class="fw-semibold" th:text="${b.restaurant.name}"></span>
+                        </td>
+
+                        <td>
+                            <div class="fw-medium" th:text="${b.user != null ? b.user.username : '—'}"></div>
+                            <small class="text-muted" th:text="${b.user != null ? b.user.email : ''}"></small><br/>
+                            <small class="text-muted" th:text="${b.user != null ? b.user.phone : ''}"></small>
+                        </td>
+
+                        <td th:text="${#temporals.format(b.bookingDate, 'dd/MM/yyyy')}"></td>
+
+                        <td th:text="${b.bookingShift.label}"></td>
+
+                        <td class="text-center fw-semibold" th:text="${b.numberOfGuests}"></td>
+
+                        <td>
+                            <span th:if="${b.status.name() == 'PENDING'}"   class="badge bg-warning text-dark">Chờ xác nhận</span>
+                            <span th:if="${b.status.name() == 'CONFIRMED'}" class="badge bg-success">Đã xác nhận</span>
+                            <span th:if="${b.status.name() == 'CANCELLED'}" class="badge bg-danger">Đã hủy</span>
+                        </td>
+
+                        <td class="text-center text-muted small"
+                            th:text="${#temporals.format(b.createdAt, 'dd/MM HH:mm')}"></td>
+
+                        <td class="text-center" style="white-space:nowrap">
+                            <!-- Confirm -->
+                            <form th:if="${b.status.name() == 'PENDING'}"
+                                  th:action="@{/reception/restaurant-bookings/{id}/confirm(id=${b.bookingId})}"
+                                  method="post" class="d-inline">
+                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                                <button type="submit" class="btn btn-sm btn-success"
+                                        th:onclick="'return confirm(\'Xác nhận đặt bàn #' + ${b.bookingId} + '?\')'">
+                                    <i class="fa-solid fa-check"></i> Xác nhận
+                                </button>
+                            </form>
+                            <!-- Cancel → mở modal -->
+                            <button th:if="${b.status.name() == 'PENDING' or b.status.name() == 'CONFIRMED'}"
+                                    type="button" class="btn btn-sm btn-danger ms-1"
+                                    th:onclick="|openCancelModal(${b.bookingId})|">
+                                <i class="fa-solid fa-xmark"></i> Hủy
+                            </button>
+                            <span th:if="${b.status.name() == 'CANCELLED'}" class="text-muted">—</span>
+                        </td>
+                    </tr>
+
+                    <tr th:if="${bookingPage.totalElements == 0}">
+                        <td colspan="9" class="text-center text-muted py-5">
+                            <i class="fa-regular fa-calendar-xmark fs-1 d-block mb-2"></i>
+                            Chưa có đặt bàn nào
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <nav th:if="${bookingPage.totalPages > 1}" aria-label="Page navigation">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item" th:classappend="${bookingPage.number == 0} ? 'disabled'">
+                        <a class="page-link"
+                           th:href="@{/reception/restaurant-bookings(page=${bookingPage.number - 1},status=${selectedStatus},restaurantId=${selectedRestaurant})}">
+                            <i class="bi bi-chevron-left"></i>
+                        </a>
+                    </li>
+                    <li class="page-item"
+                        th:each="p : ${#numbers.sequence(0, bookingPage.totalPages - 1)}"
+                        th:classappend="${p == bookingPage.number} ? 'active'">
+                        <a class="page-link"
+                           th:href="@{/reception/restaurant-bookings(page=${p},status=${selectedStatus},restaurantId=${selectedRestaurant})}"
+                           th:text="${p + 1}"></a>
+                    </li>
+                    <li class="page-item" th:classappend="${bookingPage.number >= bookingPage.totalPages - 1} ? 'disabled'">
+                        <a class="page-link"
+                           th:href="@{/reception/restaurant-bookings(page=${bookingPage.number + 1},status=${selectedStatus},restaurantId=${selectedRestaurant})}">
+                            <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+
+            <p class="text-center text-muted mt-2" th:if="${bookingPage.totalElements > 0}">
+                Tổng <strong th:text="${bookingPage.totalElements}"></strong> đặt bàn —
+                Trang <strong th:text="${bookingPage.number + 1}"></strong>/<strong th:text="${bookingPage.totalPages}"></strong>
+            </p>
+        </div>
+    </div>
+
+    <!-- ── Modal nhập lý do hủy ── -->
+    <div class="modal fade" id="cancelModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="border-radius:16px;border:none">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold">
+                        <i class="fa-solid fa-ban text-danger"></i> Hủy đặt bàn
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body pt-2">
+                    <p class="text-muted small mb-3">Lý do sẽ được gửi đến email khách hàng.</p>
+                    <form id="cancelForm" method="post">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">
+                                Lý do hủy <span class="text-danger">*</span>
+                            </label>
+                            <textarea name="cancelReason" id="cancelReason" class="form-control" rows="3"
+                                      required placeholder="Ví dụ: Nhà hàng hết chỗ, sự cố kỹ thuật..."></textarea>
+                        </div>
+                        <div class="d-flex justify-content-end gap-2">
+                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Đóng</button>
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fa-solid fa-xmark"></i> Xác nhận hủy
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script layout:fragment="scripts">
+    function openCancelModal(bookingId) {
+        document.getElementById('cancelForm').action = '/reception/restaurant-bookings/' + bookingId + '/cancel';
+        document.getElementById('cancelReason').value = '';
+        new bootstrap.Modal(document.getElementById('cancelModal')).show();
+    }
+</script>
+
+<style layout:fragment="styles">
+    .content-header {
+        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+        padding: 25px;
+        border-radius: 20px;
+        box-shadow: 0 8px 25px rgba(0,0,0,.1);
+        margin-bottom: 20px;
+    }
+    .welcome-text {
+        font-size: 26px;
+        font-weight: 700;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 8px;
+    }
+    .welcome-subtitle { color: #64748b; font-size: 15px; margin: 0; }
+    .card {
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 4px 16px rgba(0,0,0,.07);
+        border: none;
+    }
+    .table thead th { border-bottom: 2px solid #e2e8f0; font-weight: 600; color: #475569; }
+    .table tbody tr:hover { background-color: rgba(102,126,234,.04); }
+    .badge { padding: 5px 12px; font-weight: 500; }
+    .pagination .page-link { border-radius: 8px; margin: 0 3px; border: 1px solid #e2e8f0; color: #667eea; }
+    .pagination .page-item.active .page-link {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-color: #667eea;
+    }
+</style>
+</body>
+</html>

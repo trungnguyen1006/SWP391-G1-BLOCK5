@@ -133,7 +133,7 @@ public class RestaurantBookingService {
     }
 
     // ─────────────────────────────────────────────────────────────────
-    // XÁC NHẬN booking — Admin / Receptionist
+    // XÁC NHẬN booking — Receptionist
     // ─────────────────────────────────────────────────────────────────
     public void confirmBooking(Long bookingId) {
         RestaurantBooking booking = findById(bookingId);
@@ -159,7 +159,7 @@ public class RestaurantBookingService {
     }
 
     // ─────────────────────────────────────────────────────────────────
-    // HỦY booking — Admin / Receptionist / chính user (khi còn PENDING)
+    // HỦY booking — Receptionist / chính user (khi còn PENDING)
     // ─────────────────────────────────────────────────────────────────
     public void cancelBooking(Long bookingId, String reason) {
         RestaurantBooking booking = findById(bookingId);

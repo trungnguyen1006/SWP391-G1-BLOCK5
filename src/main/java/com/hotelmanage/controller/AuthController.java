@@ -62,7 +62,7 @@ public class AuthController {
         // Kiểm tra số điện thoại đã được sử dụng (bỏ qua tài khoản GUEST tạm thời)
         if (req.getPhone() != null && !req.getPhone().isBlank()) {
             if (userRepository.existsByPhoneAndRoleNot(req.getPhone(), UserRole.GUEST)) {
-                bindingResult.rejectValue("phone", "phone.exists", "Số điện thoại đã được sử dụng");
+                bindingResult.rejectValue("phone", "phone.exists", "Số điện thoại này đã được đăng ký. Vui lòng đăng nhập.");
             }
         }
 
