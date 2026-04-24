@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/admin-layout}" lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${room.roomId == null ? 'Thêm Phòng' : 'Chỉnh Sửa Phòng'}"></title>
+</head>
+<body>
+<div layout:fragment="content" class="container mt-4">
+
+
+    <h2 th:text="${room.roomId == null ? 'Thêm Phòng' : 'Chỉnh Sửa Phòng'}"></h2>
+
+
+    <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+
+    <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+
+
+    <form th:object="${room}"
+          th:action="@{${room.roomId == null ? '/admin/rooms/create' : '/admin/rooms/update/' + room.roomId}}"
+          method="post"
+          class="mt-3 needs-validation" novalidate>
+
+
+        <div class="mb-3">
+            <label for="roomNumber" class="form-label">Số Phòng</label>
+            <input type="text" id="roomNumber" th:field="*{roomNumber}" class="form-control" required>
+
+            <div class="text-danger mt-1" th:if="${#fields.hasErrors('roomNumber')}"
+                 th:errors="*{roomNumber}">Số phòng không hợp lệ</div>
+        </div>
+
+
+        <div class="mb-3">
+            <label for="status" class="form-label">Trạng Thái</label>
+            <select id="status" th:field="*{status}" class="form-select" required>
+                <option value="AVAILABLE">AVAILABLE</option>
+                <option value="OCCUPIED">OCCUPIED</option>
+                <option value="UNDER_MAINTENANCE">UNDER MAINTENANCE</option>
+            </select>
+        </div>
+
+
+        <div class="mb-3">
+            <label for="roomType" class="form-label">Loại Phòng</label>
+            <select id="roomType" th:field="*{roomType.roomTypeId}" class="form-select" required>
+                <option value="">-- Chọn loại phòng --</option>
+                <option th:each="rt : ${roomTypes}"
+                        th:value="${rt.roomTypeId}"
+                        th:text="${rt.roomTypeName}">
+                </option>
+            </select>
+        </div>
+
+
+        <div class="mt-4">
+            <button type="submit" class="btn btn-primary"
+                    th:text="${room.roomId == null ? 'Lưu' : 'Cập nhật'}"></button>
+            <a th:href="@{/admin/rooms}" class="btn btn-secondary ms-2">Quay lại</a>
+        </div>
+    </form>
+
+</div>
+
+
+<script>
+    (function () {
+        'use strict';
+        const forms = document.querySelectorAll('.needs-validation');
+        Array.from(forms).forEach(form => {
+            form.addEventListener('submit', event => {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    })();
+</script>
+
+</body>
+</html>

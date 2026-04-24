@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/admin-layout}">
+<head>
+    <title th:text="${roomType.roomTypeId == null ? 'Thêm Loại Phòng' : 'Sửa Loại Phòng'}"></title>
+</head>
+<body>
+<div layout:fragment="content">
+    <div th:if="${success}" class="alert alert-success alert-dismissible fade show">
+        <span th:text="${success}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show">
+        <span th:text="${error}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 th:text="${roomType.roomTypeId == null ? 'Thêm Loại Phòng Mới' : 'Sửa Loại Phòng'}"></h3>
+                </div>
+                <div class="card-body">
+                    <form th:action="${roomType.roomTypeId == null ?
+                 '/admin/room-types/create' :
+                 '/admin/room-types/update/' + roomType.roomTypeId}"
+                          method="post">
+
+                        <div class="mb-3">
+                            <label for="roomTypeName" class="form-label">Tên Loại Phòng *</label>
+                            <input type="text"
+                                   class="form-control"
+                                   id="roomTypeName"
+                                   name="roomTypeName"
+                                   th:value="${roomType.roomTypeName}"
+                                   required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="price" class="form-label">Giá (VNĐ) *</label>
+                            <input type="number"
+                                   class="form-control"
+                                   id="price"
+                                   name="price"
+                                   th:value="${roomType.price}"
+                                   step="0.01"
+                                   required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="amountPerson" class="form-label">Số Người *</label>
+                            <select class="form-select"
+                                    id="amountPerson"
+                                    name="amountPerson"
+                                    required>
+                                <option value="">-- Chọn số người --</option>
+                                <option value="1" th:selected="${roomType.amountPerson == 1}">1 người</option>
+                                <option value="2" th:selected="${roomType.amountPerson == 2}">2 người</option>
+                                <option value="3" th:selected="${roomType.amountPerson == 3}">3 người</option>
+                                <option value="4" th:selected="${roomType.amountPerson == 4}">4 người</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Mô Tả</label>
+                            <textarea class="form-control"
+                                      id="description"
+                                      name="description"
+                                      rows="3"
+                                      th:text="${roomType.description}"></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="device" class="form-label">Thiết Bị</label>
+                            <textarea class="form-control"
+                                      id="device"
+                                      name="device"
+                                      rows="2"
+                                      th:text="${roomType.device}"></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="utilities" class="form-label">Tiện Ích</label>
+                            <textarea class="form-control"
+                                      id="utilities"
+                                      name="utilities"
+                                      rows="2"
+                                      th:text="${roomType.utilities}"></textarea>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save"></i> Lưu
+                            </button>
+                            <a th:href="@{/admin/room-types}" class="btn btn-secondary">
+                                <i class="bi bi-x-circle"></i> Hủy
+                            </a>
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

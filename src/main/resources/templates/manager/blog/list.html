@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layout/admin-layout}">
+      layout:decorate="~{layout/manager-layout}">
 <head>
     <title>Quản lý Blog</title>
 </head>
@@ -26,7 +26,7 @@
     </form>
 
     <div>
-        <a class="btn btn-primary" th:href="@{/admin/blogs/create}" style="padding:6px 12px;margin-top:8px;display:inline-block">
+        <a class="btn btn-primary" th:href="@{/manager/blogs/create}" style="padding:6px 12px;margin-top:8px;display:inline-block">
             <i class="fa-solid fa-plus"></i> Thêm
         </a>
     </div>
@@ -53,13 +53,13 @@
                 Mô tả
             </td>
             <td style="text-align:right;white-space:nowrap">
-                <a class="btn btn-info" th:href="@{/admin/blogs/{id}/view(id=${blog.id})}">
+                <a class="btn btn-info" th:href="@{/manager/blogs/{id}/view(id=${blog.id})}">
                     <i class="fa-regular fa-eye"></i> Xem
                 </a>
-                <a class="btn btn-warning" th:href="@{/admin/blogs/{id}(id=${blog.id})}">
+                <a class="btn btn-warning" th:href="@{/manager/blogs/{id}(id=${blog.id})}">
                     <i class="fa-regular fa-pen-to-square"></i> Sửa
                 </a>
-                <form th:action="@{/admin/blogs/{id}/delete(id=${blog.id})}" method="post" style="display:inline">
+                <form th:action="@{/manager/blogs/{id}/delete(id=${blog.id})}" method="post" style="display:inline">
                     <button class="btn btn-danger" type="submit" onclick="return confirm('Xóa blog?')">
                         <i class="fa-regular fa-trash-can"></i> Xóa
                     </button>
@@ -70,17 +70,17 @@
     </table>
 
     <div class="pagination" style="display:flex;gap:8px;margin-top:10px;align-items:center">
-        <a class="btn" th:href="@{/admin/blogs(page=${currentPage > 0 ? currentPage - 1 : 0}, q=${q})}">«</a>
+        <a class="btn" th:href="@{/manager/blogs(page=${currentPage > 0 ? currentPage - 1 : 0}, q=${q})}">«</a>
 
         <th:block th:each="p : ${#numbers.sequence(1, totalPages > 0 ? totalPages : 1)}">
             <a class="btn"
                th:class="${p == currentPage + 1 ? 'btn btn-primary' : 'btn'}"
                th:text="${p}"
-               th:href="@{/admin/blogs(page=${p - 1}, q=${q})}">
+               th:href="@{/manager/blogs(page=${p - 1}, q=${q})}">
             </a>
         </th:block>
 
-        <a class="btn" th:href="@{/admin/blogs(page=${currentPage + 1 < totalPages ? currentPage + 1 : totalPages - 1}, q=${q})}">»</a>
+        <a class="btn" th:href="@{/manager/blogs(page=${currentPage + 1 < totalPages ? currentPage + 1 : totalPages - 1}, q=${q})}">»</a>
 
         <span style="margin-left:8px">
                 Trang <span th:text="${totalPages > 0 ? currentPage + 1 : 1}"></span>/<span th:text="${totalPages > 0 ? totalPages : 1}"></span>

@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/admin-layout}">
+<head>
+    <title>Xem user - Hoi An Hotel</title>
+    <th:block layout:fragment="extra-css">
+        <style>
+            .form {
+                max-width: 600px;
+                margin: 0 auto;
+                padding: 20px;
+                background: #fff;
+                border-radius: 8px;
+                box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            }
+
+            .form label {
+                display: block;
+                margin-bottom: 15px;
+                font-weight: 500;
+            }
+
+            .form input {
+                width: 100%;
+                padding: 8px 12px;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                margin-top: 5px;
+                background: #f8f9fa;
+            }
+
+            .form input:disabled {
+                background: #f8f9fa;
+                cursor: not-allowed;
+            }
+
+            .avatar-container {
+                border: 1px solid #d9d4ca;
+                border-radius: 10px;
+                padding: 20px;
+                text-align: center;
+                background: #fbf9f4;
+                margin-top: 10px;
+            }
+
+            .avatar-image {
+                max-width: 200px;
+                max-height: 200px;
+                border-radius: 50%;
+                box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            }
+
+            .btn {
+                display: inline-block;
+                padding: 8px 20px;
+                background: #f9c74f;
+                color: #000;
+                border: none;
+                border-radius: 4px;
+                text-decoration: none;
+                cursor: pointer;
+                font-weight: 500;
+                transition: background-color 0.3s;
+            }
+
+            .btn:hover {
+                background: #f8b62b;
+            }
+
+            .modal-actions {
+                margin-top: 20px;
+                text-align: center;
+            }
+
+            h1 {
+                text-align: center;
+                margin-bottom: 20px;
+                color: #2c3e50;
+            }
+        </style>
+    </th:block>
+</head>
+<body>
+<div layout:fragment="content">
+    <h1>Thông tin User</h1>
+    <div class="form">
+        <label>
+            Tên đăng nhập
+            <input type="text" th:value="${user?.username}" disabled />
+        </label>
+
+        <label>
+            Email
+            <input type="email" th:value="${user?.email}" disabled />
+        </label>
+
+        <label>
+            Số điện thoại
+            <input type="text" th:value="${user?.phone}" disabled />
+        </label>
+
+        <label>
+            Địa chỉ
+            <input type="text" th:value="${user?.address}" disabled />
+        </label>
+
+        <label>
+            Vai trò
+            <input type="text" th:value="${user?.role?.name()}" disabled />
+        </label>
+
+        <label>
+            Trạng thái
+            <input type="text" th:value="${user?.status?.name()}" disabled />
+        </label>
+
+        <label>Avatar</label>
+        <div class="avatar-container">
+            <img th:if="${user != null}"
+                 th:src="${user.avatarUrl} ?: @{/images/avatar-placeholder.svg}"
+                 alt="avatar"
+                 class="avatar-image"
+                 onerror="this.onerror=null; this.src=@{/images/avatar-placeholder.svg};" />
+        </div>
+
+        <div class="modal-actions">
+            <a class="btn" th:href="@{/admin/users}">
+                <i class="fa-solid fa-arrow-left"></i> Quay lại
+            </a>
+        </div>
+    </div>
+</div>
+</body>
+</html>

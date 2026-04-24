@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/manager-layout}">
+<head>
+    <title>Quản Lý Loại Phòng</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Quản Lý Loại Phòng</h2>
+        <a th:href="@{/manager/room-types/create}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Thêm Loại Phòng
+        </a>
+    </div>
+
+    <div th:if="${success}" class="alert alert-success alert-dismissible fade show">
+        <span th:text="${success}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show">
+        <span th:text="${error}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <!-- Search Form -->
+    <div class="card mb-3">
+        <div class="card-body">
+            <form th:action="@{/manager/room-types}" method="get" class="row g-3">
+                <div class="col-md-10">
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="bi bi-search"></i>
+                        </span>
+                        <input type="text"
+                               class="form-control"
+                               name="q"
+                               th:value="${q}"
+                               placeholder="Tìm kiếm theo tên loại phòng...">
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-search"></i> Tìm kiếm
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <div th:if="${roomTypes.empty}" class="alert alert-info">
+                <i class="bi bi-info-circle"></i> Không tìm thấy loại phòng nào.
+            </div>
+
+            <div th:if="${!roomTypes.empty}">
+                <table class="table table-hover">
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Tên Loại Phòng</th>
+                        <th>Giá</th>
+                        <th>Số Người</th>
+                        <th>Mô Tả</th>
+                        <th>Hành Động</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="roomType : ${roomTypes}">
+                        <td th:text="${roomType.roomTypeId}"></td>
+                        <td th:text="${roomType.roomTypeName}"></td>
+                        <td th:text="${#numbers.formatDecimal(roomType.price, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'"></td>
+                        <td th:text="${roomType.amountPerson} + ' người'"></td>
+                        <td th:text="${#strings.abbreviate(roomType.description, 50)}"></td>
+                        <td>
+                            <a th:href="@{/manager/room-types/edit/{id}(id=${roomType.roomTypeId})}"
+                               class="btn btn-sm btn-warning">
+                                <i class="bi bi-pencil"></i> Sửa
+                            </a>
+                            <a th:href="@{/manager/room-types/{id}/images(id=${roomType.roomTypeId})}"
+                               class="btn btn-sm btn-info">
+                                <i class="bi bi-images"></i> Ảnh
+                            </a>
+                            <form th:action="@{/manager/room-types/delete/{id}(id=${roomType.roomTypeId})}"
+                                  method="post"
+                                  style="display: inline;"
+                                  onsubmit="return confirm('Bạn có chắc muốn xóa?');">
+                                <button type="submit" class="btn btn-sm btn-danger">
+                                    <i class="bi bi-trash"></i> Xóa
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+
+                <!-- Pagination -->
+                <div th:if="${totalPages > 1}" class="pagination" style="display:flex;gap:8px;margin-top:10px;align-items:center">
+                    <a class="btn" th:href="@{/manager/room-types(page=${currentPage > 0 ? currentPage - 1 : 0}, q=${q})}">«</a>
+
+                    <th:block th:each="p : ${#numbers.sequence(1, totalPages)}">
+                        <a class="btn"
+                           th:classappend="${p == currentPage + 1 ? 'btn-primary' : ''}"
+                           th:text="${p}"
+                           th:href="@{/manager/room-types(page=${p - 1}, q=${q})}">
+                        </a>
+                    </th:block>
+
+                    <a class="btn" th:href="@{/manager/room-types(page=${currentPage < totalPages - 1 ? currentPage + 1 : totalPages - 1}, q=${q})}">»</a>
+
+                    <span style="margin-left:8px">
+        Trang <span th:text="${currentPage + 1}"></span>/<span th:text="${totalPages}"></span>
+    </span>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

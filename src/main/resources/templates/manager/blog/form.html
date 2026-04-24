@@ -148,7 +148,7 @@
             <span th:text="${error}">Lỗi</span>
         </div>
 
-        <form th:action="${blog.id != null ? '/admin/blogs/' + blog.id : '/admin/blogs'}"
+        <form th:action="${blog.id != null ? '/manager/blogs/' + blog.id : '/manager/blogs'}"
               method="post"
               enctype="multipart/form-data"
               class="form">
@@ -205,7 +205,7 @@
             </div>
 
             <div class="modal-actions">
-                <a class="btn" th:href="@{/admin/blogs}">Hủy</a>
+                <a class="btn" th:href="@{/manager/blogs}">Hủy</a>
                 <button class="btn primary" type="submit">Lưu</button>
             </div>
         </form>
