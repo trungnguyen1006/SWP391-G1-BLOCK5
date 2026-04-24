@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${restaurant.id != null ? 'Sửa nhà hàng' : 'Thêm nhà hàng'}">Quản lý Nhà hàng</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+    <style>
+        body {
+            padding-top: 80px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        main {
+            flex: 1;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            width: 100%;
+        }
+
+        .form {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .form label {
+            display: block;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .form input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: inherit;
+        }
+
+        .dropzone {
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 20px;
+        }
+
+        .dropzone:hover, .dropzone.dragover {
+            border-color: var(--accent-color);
+            background: #f9f9f9;
+        }
+
+        .dropzone .hint {
+            color: #999;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+
+        .dropzone .preview {
+            margin-top: 15px;
+        }
+
+        .dropzone .preview img {
+            max-width: 300px;
+            max-height: 200px;
+            border-radius: 8px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 10px 25px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-block;
+            background: #e0e0e0;
+            color: #333;
+        }
+
+        .btn.primary {
+            background: var(--accent-color);
+            color: #000;
+        }
+    </style>
+</head>
+<body>
+<div th:replace="~{fragments/header :: header}"></div>
+
+<main>
+    <section>
+        <h1 th:text="${restaurant.id != null ? 'Sửa nhà hàng' : 'Thêm nhà hàng'}">Thêm nhà hàng</h1>
+
+        <form th:action="${restaurant.id != null ? '/admin/restaurants/' + restaurant.id : '/admin/restaurants'}"
+              method="post"
+              enctype="multipart/form-data"
+              class="form">
+
+            <label>Tên
+                <input type="text" name="name" th:value="${restaurant?.name}" required />
+            </label>
+
+            <label>Ẩm thực
+                <input type="text" name="cuisineType" th:value="${restaurant?.cuisineType}" />
+            </label>
+
+            <label>Mô tả
+                <input type="text" name="description" th:value="${restaurant?.description}" />
+            </label>
+
+            <label>Giờ mở cửa
+                <input type="text" name="openingHours" th:value="${restaurant?.openingHours}" />
+            </label>
+
+            <label>Liên hệ
+                <input type="text" name="contactInfo" th:value="${restaurant?.contactInfo}" />
+            </label>
+
+            <label>Giá tham khảo
+                <input type="text" name="priceRange" th:value="${restaurant?.priceRange}" />
+            </label>
+
+            <label>Khuyến mãi
+                <input type="text" name="promotionText" th:value="${restaurant?.promotionText}" />
+            </label>
+
+            <div class="dropzone" id="dz" onclick="dzFile.click()" ondragover="dzDrag(event)" ondragleave="dzLeave(event)" ondrop="dzDrop(event)">
+                <input type="file" id="dzFile" name="image" accept="image/*" hidden onchange="dzPreview(this.files)" />
+                <div>Thả ảnh vào đây hoặc bấm để chọn</div>
+                <div class="hint">Hỗ trợ: JPG, PNG, WEBP. Tối đa ~5MB</div>
+                <div class="preview" id="dzPreview">
+                    <img th:if="${restaurant?.imageUrl}" th:src="${restaurant.imageUrl}" alt="preview" />
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <a class="btn" th:href="@{/admin/restaurants}">Hủy</a>
+                <button class="btn primary" type="submit">Lưu</button>
+            </div>
+        </form>
+    </section>
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+<script>
+    const dz = document.getElementById('dz');
+    const dzFile = document.getElementById('dzFile');
+    const dzPreviewEl = document.getElementById('dzPreview');
+
+    function dzDrag(e){ e.preventDefault(); dz.classList.add('dragover'); }
+    function dzLeave(e){ e.preventDefault(); dz.classList.remove('dragover'); }
+    function dzDrop(e){
+        e.preventDefault();
+        dz.classList.remove('dragover');
+        if(e.dataTransfer?.files?.[0]){
+            dzFile.files = e.dataTransfer.files;
+            dzPreviewFiles(e.dataTransfer.files);
+        }
+    }
+    function dzPreview(files){ dzPreviewFiles(files); }
+    function dzPreviewFiles(files){
+        dzPreviewEl.innerHTML='';
+        if(!files?.[0]) return;
+        const reader = new FileReader();
+        reader.onload = function(e){
+            const img = document.createElement('img');
+            img.src = e.target.result;
+            dzPreviewEl.appendChild(img);
+        };
+        reader.readAsDataURL(files[0]);
+    }
+</script>
+</body>
+</html>
