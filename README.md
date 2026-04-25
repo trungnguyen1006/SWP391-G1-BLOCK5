@@ -1,1 +1,2 @@
-# SWP391-G1-BLOCK5
+# hotelManage
+HotelManagement is a Spring Boot–based application designed to streamline hotel operations and simplify administrative tasks.

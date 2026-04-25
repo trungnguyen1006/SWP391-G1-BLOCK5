@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -54,7 +55,7 @@ public class BookingService {
     }
 
     public Booking createBooking(String username,
-                                 Integer roomId,
+                                 Integer roomId, // Đổi tên parameter
                                  LocalDate checkInDate,
                                  LocalDate checkOutDate,
                                  BigDecimal totalPrice,
@@ -65,6 +66,7 @@ public class BookingService {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng!"));
 
+        // Tìm phòng theo roomId thay vì tìm available rooms
         Room selectedRoom = roomRepository.findById(roomId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy phòng!"));
 
@@ -87,7 +89,7 @@ public class BookingService {
         return savedBooking;
     }
 
-    public Booking createGuestBooking(Integer roomId,
+    public Booking createGuestBooking(Integer roomId, // Đổi tên parameter
                                       LocalDate checkInDate,
                                       LocalDate checkOutDate,
                                       BigDecimal totalPrice,
@@ -98,12 +100,14 @@ public class BookingService {
 
         log.info("Creating guest booking for email: {}, roomId: {}", customerEmail, roomId);
 
+
         if (checkOutDate.isBefore(checkInDate) || checkOutDate.isEqual(checkInDate)) {
             throw new RuntimeException("Ngày trả phòng phải sau ngày nhận phòng!");
         }
 
         User guestUser = createGuestUser(customerEmail, phone, address);
 
+        // Tìm phòng theo roomId thay vì tìm available rooms
         Room selectedRoom = roomRepository.findById(roomId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy phòng!"));
 
@@ -124,23 +128,31 @@ public class BookingService {
 
         Booking saved = bookingRepository.save(booking);
         log.info("Created guest booking with ID: {} for email: {}", saved.getBookingId(), customerEmail);
+
         return saved;
     }
 
+    /**
+     * Tạo user guest tạm thời chỉ với email
+     * User này có thể được nâng cấp lên CUSTOMER khi đăng ký tài khoản
+     */
     private User createGuestUser(String customerEmail, String phone, String address) {
+        // Kiểm tra email đã tồn tại
         return userRepository.findByEmail(customerEmail)
                 .map(existingUser -> {
+                    // Nếu email đã tồn tại với role CUSTOMER hoặc ADMIN
                     if (existingUser.getRole() == UserRole.CUSTOMER ||
-                            existingUser.getRole() == UserRole.ADMIN ||
-                            existingUser.getRole() == UserRole.RECEPTIONIST) {
+                            existingUser.getRole() == UserRole.ADMIN || existingUser.getRole() == UserRole.RECEPTIONIST) {
                         throw new RuntimeException("Email này đã được đăng ký. Vui lòng đăng nhập để đặt phòng!");
                     }
+                    // Nếu là GUEST cũ, cập nhật thông tin
                     existingUser.setPhone(phone);
                     existingUser.setAddress(address);
                     log.info("Updated existing guest user with email: {}", customerEmail);
                     return userRepository.save(existingUser);
                 })
                 .orElseGet(() -> {
+                    // Tạo user guest mới
                     User guest = User.builder()
                             .username("guest_" + customerEmail.split("@")[0] + "_" + System.currentTimeMillis())
                             .password("")
@@ -150,9 +162,13 @@ public class BookingService {
                             .phone(phone)
                             .address(address)
                             .build();
+
                     User saved = userRepository.save(guest);
                     log.info("Created temporary guest user with email: {}", customerEmail);
                     return saved;
                 });
     }
+
+
 }
+

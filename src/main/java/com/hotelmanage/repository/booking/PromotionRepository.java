@@ -14,13 +14,22 @@ import java.util.Optional;
 @Repository
 public interface PromotionRepository extends JpaRepository<Promotion, Integer> {
 
+    /**
+     * Tìm promotion theo code
+     */
     Optional<Promotion> findByCode(String code);
 
     Optional<Promotion> findById(Integer id);
 
+    /**
+     * Tìm các promotion dang active và trong th?i gian hi?u l?c
+     */
     List<Promotion> findByIsActiveTrueAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
             LocalDate startDate, LocalDate endDate);
 
+    /**
+     * Ki?m tra code dã t?n t?i
+     */
     boolean existsByCode(String code);
 
     @Modifying(clearAutomatically = true)

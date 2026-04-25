@@ -57,6 +57,7 @@ public class AmenityService {
         Amenity existing = findById(amenity.getAmenityId());
         existing.setAmenityName(amenity.getAmenityName());
         existing.setImageUrl(amenity.getImageUrl());
+        existing.setDescription(amenity.getDescription());
         return amenityRepository.save(existing);
     }
 

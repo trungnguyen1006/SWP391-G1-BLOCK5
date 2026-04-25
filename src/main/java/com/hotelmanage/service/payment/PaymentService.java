@@ -90,9 +90,9 @@ public class PaymentService {
         bookingRepository.save(booking);
 
         // Bypass VNPay for demo
-        String vnp_TxnRef = booking.getBookingId() + "_" + payment.getPaymentId();
-        return "/booking/payment/callback?vnp_ResponseCode=00&vnp_TxnRef=" + vnp_TxnRef;
-        // return buildVNPayUrl(booking, payment, request);
+        // String vnp_TxnRef = booking.getBookingId() + "_" + payment.getPaymentId();
+        // return "/booking/payment/callback?vnp_ResponseCode=00&vnp_TxnRef=" + vnp_TxnRef;
+        return buildVNPayUrl(booking, payment, request);
     }
 
     /**

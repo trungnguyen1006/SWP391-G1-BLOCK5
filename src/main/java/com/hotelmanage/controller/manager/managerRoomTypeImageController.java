@@ -16,7 +16,7 @@ import java.util.List;
 @Controller
 @RequestMapping("/manager/room-types")
 @RequiredArgsConstructor
-public class RoomTypeImageController {
+public class managerRoomTypeImageController {
 
     private final RoomTypeService roomTypeService;
     private final RoomTypeImageService roomTypeImageService;

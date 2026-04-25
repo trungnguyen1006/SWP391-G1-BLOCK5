@@ -20,7 +20,7 @@ import jakarta.validation.Valid;
 @Controller
 @RequestMapping("/manager/room-types")
 @RequiredArgsConstructor
-public class RoomTypeController {
+public class ManagerRoomTypeController {
 
     private final RoomTypeService roomTypeService;
     private final RoomTypeRepository roomTypeRepository;

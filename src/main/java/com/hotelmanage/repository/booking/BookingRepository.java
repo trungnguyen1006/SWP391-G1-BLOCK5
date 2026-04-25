@@ -17,7 +17,7 @@ import java.util.Optional;
 
 @Repository
 public interface BookingRepository extends JpaRepository<Booking, Long> {
-
+    // Tìm tất cả booking của user
     @Query("SELECT b FROM Booking b WHERE b.user.id = :userId ORDER BY b.createdAt DESC")
     List<Booking> findByUserId(@Param("userId") Long userId);
 
@@ -25,6 +25,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     List<Booking> findExpiredPendingBookings(@Param("status") BookingStatus status,
                                              @Param("expiryTime") LocalDateTime expiryTime);
 
+    // Tìm tất cả booking với phân trang
     @Query("SELECT b FROM Booking b ORDER BY b.createdAt DESC")
     Page<Booking> findAllBookingsWithPagination(Pageable pageable);
 
