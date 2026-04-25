@@ -48,7 +48,7 @@ ALTER TABLE `users`
   MODIFY `user_id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 ALTER TABLE users
-    MODIFY role_id ENUM('ADMIN', 'CUSTOMER', 'MANAGER', 'RECEPTIONIST');
+    MODIFY role_id ENUM('ADMIN', 'CUSTOMER', 'MANAGER', 'RECEPTIONIST', 'GUEST');
 
 --
 -- Table structure for table `room_type`

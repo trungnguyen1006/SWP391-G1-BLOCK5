@@ -31,27 +31,6 @@ public class BookingService {
     private final PromotionService promotionService;
     private final PromotionRepository promotionRepository;
 
-    /**
-     * Hủy booking và hoàn trả lượt dùng promotion nếu có
-     */
-    public void cancelBooking(Integer bookingId) {
-        Booking booking = bookingRepository.findById(bookingId.longValue())
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy booking!"));
-
-        if (booking.getStatus() == BookingStatus.CANCELLED_PERMANENTLY) {
-            throw new RuntimeException("Booking đã được hủy trước đó!");
-        }
-
-        booking.setStatus(BookingStatus.CANCELLED_PERMANENTLY);
-        bookingRepository.save(booking);
-
-        if (booking.getPromotion() != null) {
-            promotionService.decrementUsedCount(booking.getPromotion().getPromotionId());
-        }
-
-        log.info("Cancelled booking ID: {}", bookingId);
-    }
-
     public Booking createBooking(String username,
                                  Integer roomId, // Đổi tên parameter
                                  LocalDate checkInDate,

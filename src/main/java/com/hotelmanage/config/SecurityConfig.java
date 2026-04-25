@@ -12,6 +12,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -21,8 +22,6 @@ import org.springframework.security.web.authentication.AuthenticationFailureHand
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 
 import java.io.IOException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
@@ -31,7 +30,6 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
 
 @Configuration
 @EnableWebSecurity
@@ -58,12 +56,11 @@ public class SecurityConfig {
                         .requestMatchers("/reception/**").hasAnyRole("RECEPTIONIST")
                         .anyRequest().authenticated()
                 )
-                .authenticationProvider(authenticationProvider())
                 .formLogin(form -> form
                         .loginPage("/login")
                         .loginProcessingUrl("/login")
                         .successHandler(authenticationSuccessHandler())
-                        .failureHandler(authenticationFailureHandler())
+                        .failureUrl("/login?error")
                         .permitAll()
                 )
                 .logout(logout -> logout
@@ -78,14 +75,6 @@ public class SecurityConfig {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
-    }
-
-    @Bean
-    public DaoAuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-        authProvider.setUserDetailsService(userDetailsService());
-        authProvider.setPasswordEncoder(passwordEncoder()); // IMPORTANT
-        return authProvider;
     }
 
     @Bean
@@ -117,11 +106,6 @@ public class SecurityConfig {
         return new RoleBasedAuthenticationSuccessHandler();
     }
 
-    @Bean
-    public AuthenticationFailureHandler authenticationFailureHandler() {
-        return new CustomAuthenticationFailureHandler();
-    }
-
     static class RoleBasedAuthenticationSuccessHandler implements AuthenticationSuccessHandler {
         @Override
         public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
@@ -144,23 +128,6 @@ public class SecurityConfig {
                 }
             }
             response.sendRedirect(redirectUrl);
-        }
-    }
-
-    static class CustomAuthenticationFailureHandler implements AuthenticationFailureHandler {
-        @Override
-        public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException {
-            String errorMessage;
-            // Customize error messages based on exception type
-            if (exception.getMessage().contains("User not found") ||
-                    exception.getMessage().contains("Bad credentials")) {
-                errorMessage = "Sai thông tin đăng nhập";
-            } else if (exception.getMessage().contains("User inactive")) {
-                errorMessage = "Người dùng đã bị vô hiệu hoá, hãy liên hệ với admin để được hỗ trợ.";
-            } else {
-                errorMessage = "Sai thông tin đăng nhập";
-            }
-            response.sendRedirect("/login?error=" + URLEncoder.encode(errorMessage, StandardCharsets.UTF_8));
         }
     }
 }
