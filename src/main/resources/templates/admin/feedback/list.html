@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/admin-layout}">
+<head>
+    <title>Quản lý góp ý</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">Góp Ý Khách Hàng</h2>
+            <p class="text-muted mb-0">Theo dõi phản hồi từ khách, phân loại theo dịch vụ đặt phòng hoặc nhà hàng.</p>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body">
+            <form class="row g-2 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Lọc theo danh mục</label>
+                    <select class="form-select" name="category">
+                        <option value="" th:selected="${selectedCategory == null}">Tất cả</option>
+                        <option th:value="${T(com.hotelmanage.entity.Enum.FeedbackCategory).BOOKING_SERVICE}"
+                                th:selected="${selectedCategory == T(com.hotelmanage.entity.Enum.FeedbackCategory).BOOKING_SERVICE}">
+                            Dịch vụ đặt phòng
+                        </option>
+                        <option th:value="${T(com.hotelmanage.entity.Enum.FeedbackCategory).RESTAURANT}"
+                                th:selected="${selectedCategory == T(com.hotelmanage.entity.Enum.FeedbackCategory).RESTAURANT}">
+                            Nhà hàng
+                        </option>
+                        <option th:value="${T(com.hotelmanage.entity.Enum.FeedbackCategory).BOTH}"
+                                th:selected="${selectedCategory == T(com.hotelmanage.entity.Enum.FeedbackCategory).BOTH}">
+                            Cả hai
+                        </option>
+                    </select>
+
+                </div>
+                <div class="col-md-auto">
+                    <button class="btn btn-primary">
+                        <i class="bi bi-funnel-fill me-1"></i>Lọc
+                    </button>
+                </div>
+                <div class="col-md-auto">
+                    <a th:href="@{/admin/feedbacks}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-counterclockwise me-1"></i>Reset
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body">
+            <div th:if="${#lists.isEmpty(feedbacks)}" class="text-center py-5 text-muted">
+                <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+                Chưa có góp ý nào phù hợp với bộ lọc.
+            </div>
+
+            <div th:if="${!#lists.isEmpty(feedbacks)}" class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                    <tr>
+                        <th>#</th>
+                        <th>Khách hàng</th>
+                        <th>Danh mục</th>
+                        <th>Đối tượng</th>
+                        <th>Nội dung</th>
+                        <th>Thời gian</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="feedback, iterStat : ${feedbacks}">
+                        <td th:text="${iterStat.count}"></td>
+                        <td>
+                            <div class="fw-semibold" th:text="${feedback.user.username}">Demo</div>
+                            <div class="text-muted small" th:text="${feedback.user.email}">demo@email.com</div>
+                        </td>
+                        <td>
+                            <span class="badge bg-primary"
+                                  th:text="${feedback.category == T(com.hotelmanage.entity.Enum.FeedbackCategory).BOOKING_SERVICE ? 'Dịch vụ đặt phòng' :
+                                          (feedback.category == T(com.hotelmanage.entity.Enum.FeedbackCategory).RESTAURANT ? 'Nhà hàng' : 'Cả hai')}"></span>
+                        </td>
+                        <td>
+                            <div th:if="${feedback.roomType != null}">
+                                <i class="bi bi-door-open me-1 text-primary"></i>
+                                <span th:text="${feedback.roomType.roomTypeName}"></span>
+                            </div>
+                            <div th:if="${feedback.restaurant != null}">
+                                <i class="bi bi-shop me-1 text-success"></i>
+                                <span th:text="${feedback.restaurant.name}"></span>
+                            </div>
+                        </td>
+                        <td style="max-width: 420px;">
+                            <div class="text-wrap" th:text="${feedback.content}"></div>
+                        </td>
+                        <td>
+                            <div class="fw-semibold" th:text="${#temporals.format(feedback.createdAt, 'dd/MM/yyyy HH:mm')}"></div>
+                            <div class="text-muted small"
+                                 th:text="'Cập nhật ' + ${#temporals.format(feedback.updatedAt, 'dd/MM/yyyy HH:mm')}"></div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+

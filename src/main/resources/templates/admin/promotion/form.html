@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/admin-layout}">
+<head>
+    <title th:text="${promotion.promotionId != null ? 'Chỉnh sửa Mã Giảm Giá' : 'Tạo Mã Giảm Giá'}"></title>
+</head>
+
+<th:block layout:fragment="extra-css">
+    <style>
+        .code-preview {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 18px;
+            font-weight: 600;
+            color: #e74c3c;
+            text-align: center;
+            border: 2px dashed #dee2e6;
+        }
+
+        .help-text {
+            font-size: 12px;
+            color: #7f8c8d;
+            margin-top: 5px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+    </style>
+</th:block>
+
+<body>
+<div layout:fragment="content">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 th:text="${promotion.promotionId != null ? 'Chỉnh sửa Mã Giảm Giá' : 'Tạo Mã Giảm Giá'}"></h3>
+                    <p class="mb-0 text-muted" th:text="${promotion.promotionId != null ? 'Cập nhật thông tin mã giảm giá' : 'Điền thông tin để tạo mã giảm giá mới'}"></p>
+                </div>
+
+                <div class="card-body">
+                    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show">
+                        <span th:text="${error}"></span>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+
+                    <form th:action="${promotion.promotionId != null ? '/admin/promotions/edit/' + promotion.promotionId : '/admin/promotions/create'}"
+                          th:object="${promotion}"
+                          method="post">
+
+                        <div class="mb-3">
+                            <label for="code" class="form-label">Mã Code <span class="text-danger">*</span></label>
+                            <input type="text"
+                                   class="form-control"
+                                   id="code"
+                                   th:field="*{code}"
+                                   placeholder="VD: SUMMER2024, WELCOME50"
+                                   required
+                                   pattern="[A-Z0-9]+"
+                                   oninput="this.value = this.value.toUpperCase(); updateCodePreview(this.value)">
+                            <div class="help-text">Chỉ sử dụng chữ IN HOA và số, không có khoảng trắng</div>
+                            <div class="code-preview" id="codePreview" th:text="${promotion.code != null ? promotion.code : 'MÃ GIẢM GIÁ'}"></div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="discountAmount" class="form-label">Số Tiền Giảm (đ) <span class="text-danger">*</span></label>
+                            <input type="number"
+                                   class="form-control"
+                                   id="discountAmount"
+                                   th:field="*{discountAmount}"
+                                   placeholder="VD: 100000"
+                                   required
+                                   min="1000"
+                                   step="1000">
+                            <div class="help-text">Tối thiểu 1.000đ</div>
+                        </div>
+
+                        <div class="form-row mb-3">
+                            <div>
+                                <label for="startDate" class="form-label">Ngày Bắt Đầu <span class="text-danger">*</span></label>
+                                <input type="date"
+                                       class="form-control"
+                                       id="startDate"
+                                       th:field="*{startDate}"
+                                       required>
+                            </div>
+
+                            <div>
+                                <label for="endDate" class="form-label">Ngày Kết Thúc <span class="text-danger">*</span></label>
+                                <input type="date"
+                                       class="form-control"
+                                       id="endDate"
+                                       th:field="*{endDate}"
+                                       required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="usageLimit" class="form-label">Giới Hạn Sử Dụng</label>
+                            <input type="number"
+                                   class="form-control"
+                                   id="usageLimit"
+                                   th:field="*{usageLimit}"
+                                   placeholder="Để trống = Không giới hạn"
+                                   min="1">
+                            <div class="help-text">Số lần tối đa mã có thể được sử dụng. Để trống nếu không giới hạn</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="checkbox-group">
+                                <input type="checkbox"
+                                       class="form-check-input"
+                                       id="isActive"
+                                       th:field="*{isActive}">
+                                <label for="isActive" class="form-check-label">Kích hoạt ngay</label>
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <a th:href="@{/admin/promotions}" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Quay lại
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i th:class="${promotion.promotionId != null ? 'bi bi-save' : 'bi bi-check-circle'}"></i>
+                                <span th:text="${promotion.promotionId != null ? 'Cập nhật' : 'Tạo mới'}"></span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<th:block layout:fragment="extra-js">
+    <script>
+        function updateCodePreview(value) {
+            const preview = document.getElementById('codePreview');
+            preview.textContent = value || 'MÃ GIẢM GIÁ';
+        }
+
+        // Set minimum date for startDate to today
+        document.getElementById('startDate').min = new Date().toISOString().split('T')[0];
+
+        // Update endDate minimum when startDate changes
+        document.getElementById('startDate').addEventListener('change', function() {
+            document.getElementById('endDate').min = this.value;
+        });
+    </script>
+</th:block>
+</body>
+</html>

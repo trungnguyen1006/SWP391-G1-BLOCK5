@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/admin-layout}">
+<head>
+    <title>Quản Lý Lễ Tân</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Quản Lý Lễ Tân</h2>
+        <a th:href="@{/admin/receptionists/create}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Thêm Lễ Tân
+        </a>
+    </div>
+
+    <div th:if="${success}" class="alert alert-success alert-dismissible fade show">
+        <span th:text="${success}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show">
+        <span th:text="${error}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <table class="table table-hover datatable-receptionists">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Tên Lễ Tân</th>
+                    <th>Ảnh</th>
+                    <th>Email</th>
+                    <th>Sđt</th>
+                    <th>Địa Chỉ</th>
+                    <th>Trạng Thái</th>
+                    <th>Hành Động</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="a : ${receptionists}">
+                    <td th:text="${a.id}"></td>
+                    <td th:text="${a.username}"></td>
+                    <td>
+                        <img th:src="${a.avatarUrl}" alt="Receptionist Image" style="width:100px; height:auto;">
+                    </td>
+                    <td th:text="${a.email}"></td>
+                    <td th:text="${a.phone}"></td>
+                    <td th:text="${a.address}"></td>
+                    <td th:text="${a.status.name()}"></td>
+                    <td>
+                        <a th:href="@{/admin/receptionists/edit/{id}(id=${a.id})}"
+                           class="btn btn-sm btn-warning">
+                            <i class="bi bi-pencil"></i> Sửa
+                        </a>
+                        <form th:action="@{/admin/receptionists/toggle/{id}(id=${a.id})}"
+                              method="post" style="display:inline">
+
+                            <button type="submit"
+                                    th:if="${a.status.name() == 'ACTIVE'}"
+                                    class="btn btn-danger btn-sm">
+                                🛑 Vô Hiệu Hóa
+                            </button>
+
+                            <button type="submit"
+                                    th:if="${a.status.name() == 'INACTIVE'}"
+                                    class="btn btn-success btn-sm">
+                                ✅ Kích Hoạt
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+</body>
+</html>
