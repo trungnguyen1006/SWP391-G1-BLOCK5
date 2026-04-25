@@ -8,7 +8,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.GrantedAuthority;
@@ -19,6 +18,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 
 import java.io.IOException;
@@ -33,7 +33,6 @@ import org.springframework.security.core.Authentication;
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity(prePostEnabled = true)
 @RequiredArgsConstructor
 public class SecurityConfig {
 
@@ -51,8 +50,10 @@ public class SecurityConfig {
                         .requestMatchers("/css/**", "/images/**", "/js/**", "/webjars/**").permitAll()
                         // Admin only
                         .requestMatchers("/admin/**").hasRole("ADMIN")
+                        // Manager only
+                        .requestMatchers("/manager/**").hasRole("MANAGER")
                         // Receptionist
-                        .requestMatchers("/reception/**").hasAnyRole("ADMIN", "RECEPTIONIST")
+                        .requestMatchers("/reception/**").hasAnyRole("RECEPTIONIST")
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
@@ -115,8 +116,11 @@ public class SecurityConfig {
                 if ("ROLE_ADMIN".equals(role)) {
                     redirectUrl = "/admin";
                     break;
-                } else if ("ROLE_RECEPTIONIST".equals(role)) {
+                }else if ("ROLE_RECEPTIONIST".equals(role)) {
                     redirectUrl = "/reception";
+                    break;
+                } else if ("ROLE_MANAGER".equals(role)) {
+                    redirectUrl = "/manager";
                     break;
                 } else if ("ROLE_CUSTOMER".equals(role)) {
                     redirectUrl = "/home";

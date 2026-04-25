@@ -11,6 +11,8 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
+import java.util.HashMap;
+import java.util.Map;
 import java.time.format.TextStyle;
 import java.util.*;
 
@@ -74,8 +76,16 @@ public class DashboardService {
             BigDecimal monthlyRevenue = bookingRepository.calculateMonthlyRevenue(
                     currentMonth.getYear(), currentMonth.getMonthValue());
             stats.put("monthlyRevenue", monthlyRevenue != null ? monthlyRevenue : BigDecimal.ZERO);
+
+            log.info("Dashboard stats retrieved successfully");
+
         } catch (Exception e) {
-            log.error("Error calculating monthly revenue", e);
+            log.error("Error retrieving dashboard stats", e);
+            stats.put("totalRooms", 0L);
+            stats.put("availableRooms", 0L);
+            stats.put("activeUsers", 0L);
+            stats.put("totalBookings", 0L);
+            stats.put("totalRevenue", BigDecimal.ZERO);
             stats.put("monthlyRevenue", BigDecimal.ZERO);
         }
 
@@ -83,6 +93,9 @@ public class DashboardService {
         return stats;
     }
 
+    /**
+     * Lấy doanh thu theo khoảng thời gian
+     */
     public BigDecimal getRevenueByDateRange(LocalDateTime startDate, LocalDateTime endDate) {
         try {
             BigDecimal revenue = bookingRepository.calculateRevenueByDateRange(startDate, endDate);
@@ -93,6 +106,9 @@ public class DashboardService {
         }
     }
 
+    /**
+     * Lấy thống kê chi tiết
+     */
     public Map<String, Object> getDetailedStats() {
         Map<String, Object> stats = getDashboardStats();
         try {

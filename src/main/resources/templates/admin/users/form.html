@@ -150,6 +150,7 @@
                 Vai trò <span style="color:red;">*</span>
                 <select name="role" required>
                     <option value="CUSTOMER" th:selected="${user?.role?.name() == 'CUSTOMER'}">Customer (Khách hàng)</option>
+                    <option value="MANAGER" th:selected="${user?.role?.name() == 'MANAGER'}">Manager (Quản lí)</option>
                     <option value="RECEPTIONIST" th:selected="${user?.role?.name() == 'RECEPTIONIST'}">Receptionist (Lễ tân)</option>
                 </select>
             </label>

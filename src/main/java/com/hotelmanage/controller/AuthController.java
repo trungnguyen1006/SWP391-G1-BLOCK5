@@ -75,16 +75,19 @@ public class AuthController {
             if (existingUser.getRole() == UserRole.GUEST) {
                 log.info("Found existing GUEST account with email: {}, upgrading to CUSTOMER", req.getEmail());
 
+                // Kiểm tra username mới không trùng
                 if (bindingResult.hasFieldErrors("username")) {
                     return "auth/register";
                 }
 
+                // Nâng cấp GUEST lên CUSTOMER
                 upgradeGuestToCustomer(existingUser, req);
 
                 redirectAttributes.addFlashAttribute("success",
                         "Tài khoản của bạn đã được nâng cấp thành công! Lịch sử đặt phòng đã được liên kết.");
                 return "redirect:/login?upgraded";
             } else {
+                // Nếu là CUSTOMER/ADMIN/RECEPTIONIST -> báo lỗi
                 bindingResult.rejectValue("email", "email.exists", "Email đã được sử dụng");
             }
         }
@@ -93,6 +96,7 @@ public class AuthController {
             return "auth/register";
         }
 
+        // Tạo mới tài khoản CUSTOMER
         User user = User.builder()
                 .username(req.getUsername())
                 .password(passwordEncoder.encode(req.getPassword()))
@@ -109,12 +113,17 @@ public class AuthController {
         return "redirect:/login?registered";
     }
 
+    /**
+     * Nâng cấp tài khoản GUEST lên CUSTOMER
+     */
     private void upgradeGuestToCustomer(User guestUser, RegisterRequest req) {
+        // Cập nhật thông tin user
         guestUser.setUsername(req.getUsername());
         guestUser.setPassword(passwordEncoder.encode(req.getPassword()));
         guestUser.setRole(UserRole.CUSTOMER);
         guestUser.setStatus(UserStatus.ACTIVE);
 
+        // Cập nhật thông tin bổ sung nếu có
         if (req.getPhone() != null && !req.getPhone().isEmpty()) {
             guestUser.setPhone(req.getPhone());
         }
@@ -124,6 +133,7 @@ public class AuthController {
 
         userRepository.save(guestUser);
 
+        // Kiểm tra và log số booking đã liên kết
         List<Booking> bookings = bookingRepository.findByUserId(guestUser.getId());
         log.info("Upgraded GUEST to CUSTOMER: {} - Found {} existing bookings",
                 req.getUsername(), bookings.size());

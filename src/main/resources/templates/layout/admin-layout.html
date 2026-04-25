@@ -135,85 +135,29 @@
 
         <ul class="nav-menu">
             <li class="nav-item">
-                <a href="/admin" class="nav-link" id="nav-dashboard">
+                <a href="/admin" class="nav-link">
                     <i class="fas fa-home"></i>
                     <span>Dashboard</span>
                 </a>
             </li>
 
             <li class="nav-item">
-                <a href="/admin/room-types" class="nav-link" id="nav-room-types">
-                    <i class="fas fa-layer-group"></i>
-                    <span>Room Types</span>
-                </a>
-            </li>
-
-            <li class="nav-item">
-                <a href="/admin/rooms" class="nav-link" id="nav-rooms">
-                    <i class="fas fa-door-open"></i>
-                    <span>Rooms</span>
-                </a>
-            </li>
-
-            <li class="nav-item">
-                <a href="/admin/amenities" class="nav-link" id="nav-amenities">
-                    <i class="fas fa-concierge-bell"></i>
-                    <span>Amenities</span>
-                </a>
-            </li>
-
-            <li class="nav-item">
-                <a href="/admin/users" class="nav-link" id="nav-users">
+                <a href="/admin/users" class="nav-link">
                     <i class="fas fa-users"></i>
                     <span>Manage User account</span>
                 </a>
             </li>
 
-            <li class="nav-item">
-                <a href="/admin/receptionists" class="nav-link" id="nav-receptionists">
-                    <i class="fas fa-user-tie"></i>
-                    <span>Receptionists</span>
-                </a>
-            </li>
-
-            <li class="nav-item">
-                <a href="/admin/promotions" class="nav-link" id="nav-promotions">
-                    <i class="fas fa-tags"></i>
-                    <span>Promotions</span>
-                </a>
-            </li>
-
-            <li class="nav-item">
-                <a href="/admin/restaurants" class="nav-link" id="nav-restaurants">
-                    <i class="fas fa-utensils"></i>
-                    <span>Restaurants</span>
-                </a>
-            </li>
-
-
-            <li class="nav-item">
-                <a href="/admin/feedbacks" class="nav-link" id="nav-feedbacks">
-                    <i class="fas fa-comment-dots"></i>
-                    <span>Feedbacks</span>
-                </a>
-            </li>
-
-            <li class="nav-item">
-                <a href="/admin/blogs" class="nav-link" id="nav-blogs">
-                    <i class="fas fa-newspaper"></i>
-                    <span>Blogs</span>
-                </a>
-            </li>
+            <form id="logoutForm" th:action="@{/logout}" method="post" style="display:none;"></form>
 
             <li class="nav-item">
                 <a href="#" class="nav-link" onclick="document.getElementById('logoutForm').submit(); return false;">
-                    <i class="fas fa-sign-out-alt"></i>
+                    <i class="fas fa-users"></i>
                     <span>Logout</span>
                 </a>
             </li>
         </ul>
 
-        <form id="logoutForm" th:action="@{/logout}" method="post" style="display:none;"></form>
 
     </nav>
 
@@ -229,31 +173,50 @@
 <script th:src="@{/simple-datatables/simple-datatables.js}"></script>
 <script th:src="@{/tinymce/tinymce.min.js}"></script>
 <script th:src="@{/js/main.js}"></script>
-<!-- Auto highlight active nav item -->
-<script>
-    (function () {
-        var path = window.location.pathname;
-        var map = {
-            'nav-dashboard':    ['/admin'],
-            'nav-room-types':   ['/admin/room-types'],
-            'nav-rooms':        ['/admin/rooms'],
-            'nav-amenities':    ['/admin/amenities'],
-            'nav-promotions':   ['/admin/promotions'],
-            'nav-restaurants':         ['/admin/restaurants'],
-            'nav-feedbacks':    ['/admin/feedbacks'],
-            'nav-blogs':        ['/admin/blogs'],
-            'nav-users':        ['/admin/users'],
-            'nav-receptionists':['/admin/receptionists']
-        };
-        Object.entries(map).forEach(function ([id, paths]) {
-            var el = document.getElementById(id);
-            if (!el) return;
-            var matched = paths.some(function (p) {
-                return p === '/admin' ? path === '/admin' : path.startsWith(p);
-            });
-            if (matched) el.classList.add('active');
-        });
-    })();
-</script>
+<!--<script>-->
+
+<!--const select = (el, all = false) => {-->
+<!--  el = el.trim()-->
+<!--  if (all) {-->
+<!--    return [...document.querySelectorAll(el)]-->
+<!--  } else {-->
+<!--    return document.querySelector(el)-->
+<!--  }-->
+<!--}-->
+
+<!--const datatables = select('.datatable', true)-->
+<!--     datatables.forEach(datatable => {-->
+<!--     new simpleDatatables.DataTable(datatable, {-->
+<!--         searchable: true,-->
+<!--         fixedHeight: false,-->
+<!--       perPageSelect: [5, 10, 15, ["All", -1]],-->
+<!--       columns: [-->
+<!--           { select: 0, sortable: true, searchable: true },-->
+<!--           { select: 1, sortable: true, searchable: true },-->
+<!--           { select: 2, sortable: false, searchable: false },-->
+<!--           { select: 3, sortable: false, searchable: false }-->
+<!--         ]-->
+<!--     });-->
+<!--})-->
+
+<!--const datatablesReceptionists = select('.datatable-receptionists', true)-->
+<!--     datatablesReceptionists.forEach(datatable => {-->
+<!--     new simpleDatatables.DataTable(datatable, {-->
+<!--         searchable: true,-->
+<!--         fixedHeight: false,-->
+<!--       perPageSelect: [5, 10, 15, ["All", -1]],-->
+<!--       columns: [-->
+<!--           { select: 0, sortable: true, searchable: true },-->
+<!--           { select: 1, sortable: true, searchable: true },-->
+<!--           { select: 2, sortable: false, searchable: false },-->
+<!--           { select: 3, sortable: true, searchable: true },-->
+<!--           { select: 4, sortable: true, searchable: true },-->
+<!--           { select: 5, sortable: true, searchable: true },-->
+<!--           { select: 6, sortable: true, searchable: true },-->
+<!--           { select: 7, sortable: false, searchable: false },-->
+<!--         ]-->
+<!--     });-->
+<!--})-->
+<!--</script>-->
 </body>
 </html>
