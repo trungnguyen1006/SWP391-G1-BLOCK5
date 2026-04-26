@@ -3,7 +3,6 @@ package com.hotelmanage.service.dashboard;
 import com.hotelmanage.entity.Enum.BookingStatus;
 import com.hotelmanage.repository.UserRepository;
 import com.hotelmanage.repository.booking.BookingRepository;
-import com.hotelmanage.repository.room.RoomRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -21,7 +20,6 @@ import java.util.*;
 @Slf4j
 public class DashboardService {
 
-    private final RoomRepository roomRepository;
     private final UserRepository userRepository;
     private final BookingRepository bookingRepository;
 
@@ -32,61 +30,27 @@ public class DashboardService {
         Map<String, Object> stats = new HashMap<>();
 
         try {
-            Long totalRooms = roomRepository.countTotalRooms();
-            stats.put("totalRooms", totalRooms != null ? totalRooms : 0L);
+            Long totalUsers = userRepository.countManageableUsers();
+            stats.put("totalUsers", totalUsers != null ? totalUsers : 0L);
         } catch (Exception e) {
-            log.error("Error counting total rooms", e);
-            stats.put("totalRooms", 0L);
+            log.error("Error counting managed users", e);
+            stats.put("totalUsers", 0L);
         }
 
         try {
-            Long availableRooms = roomRepository.countAvailableRooms();
-            stats.put("availableRooms", availableRooms != null ? availableRooms : 0L);
-        } catch (Exception e) {
-            log.error("Error counting available rooms", e);
-            stats.put("availableRooms", 0L);
-        }
-
-        try {
-            Long activeUsers = userRepository.countActiveUsers();
+            Long activeUsers = userRepository.countActiveManageableUsers();
             stats.put("activeUsers", activeUsers != null ? activeUsers : 0L);
         } catch (Exception e) {
-            log.error("Error counting active users", e);
+            log.error("Error counting active managed users", e);
             stats.put("activeUsers", 0L);
         }
 
         try {
-            Long totalBookings = bookingRepository.countTotalBookings();
-            stats.put("totalBookings", totalBookings != null ? totalBookings : 0L);
+            Long inactiveUsers = userRepository.countInactiveManageableUsers();
+            stats.put("inactiveUsers", inactiveUsers != null ? inactiveUsers : 0L);
         } catch (Exception e) {
-            log.error("Error counting total bookings", e);
-            stats.put("totalBookings", 0L);
-        }
-
-        try {
-            BigDecimal totalRevenue = bookingRepository.calculateTotalRevenue();
-            stats.put("totalRevenue", totalRevenue != null ? totalRevenue : BigDecimal.ZERO);
-        } catch (Exception e) {
-            log.error("Error calculating total revenue", e);
-            stats.put("totalRevenue", BigDecimal.ZERO);
-        }
-
-        try {
-            YearMonth currentMonth = YearMonth.now();
-            BigDecimal monthlyRevenue = bookingRepository.calculateMonthlyRevenue(
-                    currentMonth.getYear(), currentMonth.getMonthValue());
-            stats.put("monthlyRevenue", monthlyRevenue != null ? monthlyRevenue : BigDecimal.ZERO);
-
-            log.info("Dashboard stats retrieved successfully");
-
-        } catch (Exception e) {
-            log.error("Error retrieving dashboard stats", e);
-            stats.put("totalRooms", 0L);
-            stats.put("availableRooms", 0L);
-            stats.put("activeUsers", 0L);
-            stats.put("totalBookings", 0L);
-            stats.put("totalRevenue", BigDecimal.ZERO);
-            stats.put("monthlyRevenue", BigDecimal.ZERO);
+            log.error("Error counting inactive managed users", e);
+            stats.put("inactiveUsers", 0L);
         }
 
         log.info("Dashboard stats retrieved");

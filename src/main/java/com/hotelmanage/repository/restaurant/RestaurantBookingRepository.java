@@ -20,17 +20,19 @@ public interface RestaurantBookingRepository extends JpaRepository<RestaurantBoo
     // Kiểm tra capacity: đếm booking PENDING + CONFIRMED cùng ca
     // → dùng trong service trước khi cho phép đặt bàn
     // ─────────────────────────────────────────────────────────────────
+
+
     @Query("""
-            SELECT COUNT(b) FROM RestaurantBooking b
+            SELECT COALESCE(SUM(b.numberOfGuests), 0) FROM RestaurantBooking b
             WHERE b.restaurant.id   = :restaurantId
               AND b.bookingDate      = :date
               AND b.bookingShift     = :shift
               AND b.status          IN :statuses
             """)
-    long countActiveBookings(@Param("restaurantId") Long restaurantId,
-                             @Param("date")         LocalDate date,
-                             @Param("shift")        BookingShift shift,
-                             @Param("statuses")     List<RestaurantBookingStatus> statuses);
+    long sumActiveGuests(@Param("restaurantId") Long restaurantId,
+                         @Param("date")         LocalDate date,
+                         @Param("shift")        BookingShift shift,
+                         @Param("statuses")     List<RestaurantBookingStatus> statuses);
 
     // ─────────────────────────────────────────────────────────────────
     // Lịch sử đặt bàn của user (trang "Đặt bàn của tôi")

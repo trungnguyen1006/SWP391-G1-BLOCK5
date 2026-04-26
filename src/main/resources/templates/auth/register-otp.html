@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Xac thuc OTP - Hoi An Hotel</title>
+    <style>
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: #f5f5f5;
+            font-family: "Poppins", sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card {
+            width: 100%;
+            max-width: 460px;
+            padding: 30px;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            margin: 0 0 10px;
+            font-size: 24px;
+            text-align: center;
+        }
+
+        .desc {
+            margin: 0 0 20px;
+            color: #666;
+            text-align: center;
+            line-height: 1.5;
+        }
+
+        .alert {
+            padding: 10px 12px;
+            border-radius: 6px;
+            margin-bottom: 14px;
+            background: #fff3cd;
+            border: 1px solid #ffe69c;
+            color: #664d03;
+            font-size: 14px;
+        }
+
+        .error {
+            color: #c33;
+            font-size: 14px;
+            margin-top: 6px;
+        }
+
+        input {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 18px;
+            letter-spacing: 6px;
+            text-align: center;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 16px;
+        }
+
+        button,
+        a {
+            flex: 1;
+            border: none;
+            border-radius: 6px;
+            padding: 10px 12px;
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: #f9c74f;
+            color: #111;
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+<div class="card">
+    <h1>Xac thuc OTP</h1>
+    <p class="desc">Nhap ma OTP 6 so da gui toi email <strong th:text="${registerEmail}">you@example.com</strong></p>
+
+    <div class="alert" th:if="${param.sent}">He thong da gui ma OTP moi.</div>
+    <div class="alert" th:if="${param.resent}">Da gui lai ma OTP. Vui long kiem tra email.</div>
+    <div class="alert" th:if="${#fields.hasGlobalErrors()}" th:each="e : ${#fields.globalErrors()}" th:text="${e}">OTP het han.</div>
+
+    <form th:action="@{/register/otp}" method="post" th:object="${otpForm}">
+        <input type="text" th:field="*{otp}" maxlength="6" placeholder="000000" autocomplete="one-time-code" required />
+        <div class="error" th:errors="*{otp}"></div>
+
+        <div class="actions">
+            <button type="submit" class="btn-primary">Xac nhan</button>
+            <a th:href="@{/register}" class="btn-secondary">Nhap lai thong tin</a>
+        </div>
+    </form>
+
+    <form th:action="@{/register/resend-otp}" method="post" style="margin-top: 10px;">
+        <button type="submit" class="btn-secondary" style="width: 100%;">Gui lai OTP</button>
+    </form>
+</div>
+</body>
+</html>
+
