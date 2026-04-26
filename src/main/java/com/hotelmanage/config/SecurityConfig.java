@@ -7,26 +7,26 @@ import com.hotelmanage.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.authentication.DisabledException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
 
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.core.Authentication;
@@ -42,7 +42,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/", "/login", "/register", "/restaurants/**", "/blogs/**").permitAll()
+                        .requestMatchers("/", "/login", "/register", "/register/**", "/restaurants/**", "/blogs/**").permitAll()
                         .requestMatchers("/booking/**", "/home", "/amenities/**").permitAll()
                         .requestMatchers("/payment/**", "/api/payment/**").permitAll()
                         .requestMatchers("/forgot-password/**").permitAll()
@@ -60,7 +60,7 @@ public class SecurityConfig {
                         .loginPage("/login")
                         .loginProcessingUrl("/login")
                         .successHandler(authenticationSuccessHandler())
-                        .failureUrl("/login?error")
+                        .failureHandler(authenticationFailureHandler())
                         .permitAll()
                 )
                 .logout(logout -> logout
@@ -83,10 +83,6 @@ public class SecurityConfig {
             User user = userRepository.findByUsername(username)
                     .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-            if (!Objects.equals(user.getStatus(), UserStatus.ACTIVE)) {
-                throw new UsernameNotFoundException("User inactive");
-            }
-
             List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()));
 
             return org.springframework.security.core.userdetails.User
@@ -96,7 +92,7 @@ public class SecurityConfig {
                     .accountExpired(false)
                     .accountLocked(false)
                     .credentialsExpired(false)
-                    .disabled(false)
+                    .disabled(user.getStatus() != UserStatus.ACTIVE)
                     .build();
         };
     }
@@ -106,9 +102,24 @@ public class SecurityConfig {
         return new RoleBasedAuthenticationSuccessHandler();
     }
 
+    @Bean
+    public AuthenticationFailureHandler authenticationFailureHandler() {
+        return (request, response, exception) -> {
+            String errorMessage = resolveLoginErrorMessage(exception);
+            response.sendRedirect("/login?error=" + URLEncoder.encode(errorMessage, StandardCharsets.UTF_8));
+        };
+    }
+
+    private String resolveLoginErrorMessage(AuthenticationException exception) {
+        if (exception instanceof DisabledException) {
+            return "Tai khoan cua ban dang tam khoa. Vui long lien he quan tri vien.";
+        }
+        return "Sai ten dang nhap hoac mat khau.";
+    }
+
     static class RoleBasedAuthenticationSuccessHandler implements AuthenticationSuccessHandler {
         @Override
-        public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
+        public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
             Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
             String redirectUrl = "/";
             for (GrantedAuthority authority : authorities) {

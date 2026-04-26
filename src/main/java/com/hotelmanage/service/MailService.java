@@ -23,6 +23,14 @@ public class MailService {
         mailSender.send(message);
     }
 
+    public void sendRegisterOtp(String toEmail, String otp) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(toEmail);
+        message.setSubject("Mã OTP xác thực đăng ký");
+        message.setText("Mã OTP xác thực đăng ký của bạn là: " + otp + "\nMã có hiệu lực trong 5 phút.");
+        mailSender.send(message);
+    }
+
     public void sendBookingConfirmation(Booking booking) {
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 

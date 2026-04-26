@@ -7,7 +7,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
 import java.util.Map;
 
 @RestController
@@ -22,7 +21,7 @@ public class DashboardController {
      * Lấy thống kê tổng quan cho dashboard
      */
     @GetMapping("/stats")
-    @PreAuthorize("hasRole('ADMIN', 'MANAGER')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Map<String, Object>> getDashboardStats() {
         log.info("Getting dashboard statistics");
         Map<String, Object> stats = dashboardService.getDashboardStats();
@@ -33,7 +32,7 @@ public class DashboardController {
      * Lấy thống kê chi tiết
      */
     @GetMapping("/stats/detailed")
-    @PreAuthorize("hasRole('ADMIN', 'MANAGER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<Map<String, Object>> getDetailedStats() {
         log.info("Getting detailed statistics");
         Map<String, Object> stats = dashboardService.getDetailedStats();
@@ -44,7 +43,7 @@ public class DashboardController {
      * Dữ liệu doanh thu 6 tháng gần nhất cho bar chart
      */
     @GetMapping("/chart/monthly-revenue")
-    @PreAuthorize("hasRole('ADMIN', 'MANAGER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<Map<String, Object>> getMonthlyRevenueChart() {
         log.info("Getting monthly revenue chart data");
         return ResponseEntity.ok(dashboardService.getLast6MonthsRevenue());
@@ -54,7 +53,7 @@ public class DashboardController {
      * Số booking theo trạng thái cho doughnut chart
      */
     @GetMapping("/chart/booking-status")
-    @PreAuthorize("hasRole('ADMIN', 'MANAGER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<Map<String, Long>> getBookingStatusChart() {
         log.info("Getting booking status breakdown");
         return ResponseEntity.ok(dashboardService.getBookingStatusBreakdown());

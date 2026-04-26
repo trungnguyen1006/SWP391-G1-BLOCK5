@@ -36,6 +36,15 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("SELECT COUNT(u) FROM User u WHERE u.status = 'ACTIVE' AND u.role != 'GUEST' AND u.deletedAt IS NULL")
     Long countActiveUsers();
 
+    @Query("SELECT COUNT(u) FROM User u WHERE u.role NOT IN ('ADMIN', 'GUEST') AND u.deletedAt IS NULL")
+    Long countManageableUsers();
+
+    @Query("SELECT COUNT(u) FROM User u WHERE u.status = 'ACTIVE' AND u.role NOT IN ('ADMIN', 'GUEST') AND u.deletedAt IS NULL")
+    Long countActiveManageableUsers();
+
+    @Query("SELECT COUNT(u) FROM User u WHERE u.status = 'INACTIVE' AND u.role NOT IN ('ADMIN', 'GUEST') AND u.deletedAt IS NULL")
+    Long countInactiveManageableUsers();
+
     @Query("SELECT COUNT(u) FROM User u WHERE u.role = 'CUSTOMER' AND u.status = 'ACTIVE' AND u.deletedAt IS NULL")
     Long countActiveCustomers();
 

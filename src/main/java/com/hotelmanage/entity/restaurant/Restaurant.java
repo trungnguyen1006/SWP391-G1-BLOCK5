@@ -53,10 +53,7 @@ public class Restaurant {
     @Column(name = "contact_info", length = 255)
     String contactInfo;
 
-    // ── Giới hạn booking mỗi ca ──────────────────────────────────────
-    @Column(name = "max_tables", nullable = false)
-    @Builder.Default
-    Integer maxTables = 10;
+
 
     // ── Ca hoạt động ─────────────────────────────────────────────────
     @Column(name = "has_morning", nullable = false)
