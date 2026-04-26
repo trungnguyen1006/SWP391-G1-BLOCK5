@@ -18,10 +18,21 @@ public class PromotionService {
 
     private final PromotionRepository promotionRepository;
 
-    public List<Promotion> findAll() {
-        return promotionRepository.findAll();
-    }
+    public List<Promotion> searchAndSort(String keyword, String sortDirection) {
+        org.springframework.data.domain.Sort sort = org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "promotionId"); // Default sort by ID desc
 
+        if ("asc".equalsIgnoreCase(sortDirection)) {
+            sort = org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.ASC, "discountAmount");
+        } else if ("desc".equalsIgnoreCase(sortDirection)) {
+            sort = org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "discountAmount");
+        }
+
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            return promotionRepository.findByCodeContainingIgnoreCase(keyword.trim(), sort);
+        } else {
+            return promotionRepository.findAll(sort);
+        }
+    }
 
     /**
      * Validate và trả về promotion nếu hợp lệ
@@ -34,12 +45,10 @@ public class PromotionService {
 
         LocalDate today = LocalDate.now();
 
-        // Kiểm tra còn hiệu lực
         if (!promotion.getIsActive()) {
             throw new RuntimeException("Mã giảm giá đã hết hiệu lực!");
         }
 
-        // Kiểm tra thời gian
         if (today.isBefore(promotion.getStartDate())) {
             throw new RuntimeException("Mã giảm giá chưa có hiệu lực!");
         }
@@ -48,28 +57,8 @@ public class PromotionService {
             throw new RuntimeException("Mã giảm giá đã hết hạn!");
         }
 
-        // Kiểm tra số lần dùng
-        if (promotion.getUsageLimit() != null &&
-                promotion.getUsedCount() >= promotion.getUsageLimit()) {
-            throw new RuntimeException("Mã giảm giá đã hết lượt sử dụng!");
-        }
-
         log.info("Promotion code validated successfully: {}", code);
         return promotion;
-    }
-
-    /**
-     * Tăng số lần đã sử dụng promotion
-     */
-    public void incrementUsedCount(Integer promotionId) {
-        Promotion promotion = promotionRepository.findById(promotionId)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy promotion!"));
-
-        promotion.setUsedCount(promotion.getUsedCount() + 1);
-        promotionRepository.save(promotion);
-
-        log.info("Incremented used count for promotion: {}, current count: {}",
-                promotion.getCode(), promotion.getUsedCount());
     }
 
     public List<Promotion> findAllActive() {
@@ -84,14 +73,22 @@ public class PromotionService {
     }
 
     public Promotion save(Promotion promotion) {
+        if (promotionRepository.existsByCode(promotion.getCode())) {
+            throw new RuntimeException("Mã giảm giá '" + promotion.getCode() + "' đã tồn tại!");
+        }
         return promotionRepository.save(promotion);
     }
 
     public Promotion update(Promotion promotion) {
         Promotion existing = findById(promotion.getPromotionId());
+
+        if (!existing.getCode().equalsIgnoreCase(promotion.getCode()) &&
+                promotionRepository.existsByCodeAndPromotionIdNot(promotion.getCode(), promotion.getPromotionId())) {
+            throw new RuntimeException("Mã giảm giá '" + promotion.getCode() + "' đã tồn tại!");
+        }
+
         existing.setCode(promotion.getCode());
         existing.setDiscountAmount(promotion.getDiscountAmount());
-        existing.setUsageLimit(promotion.getUsageLimit());
         existing.setStartDate(promotion.getStartDate());
         existing.setEndDate(promotion.getEndDate());
         existing.setIsActive(promotion.getIsActive());
@@ -102,16 +99,5 @@ public class PromotionService {
         Promotion promotion = findById(id);
         promotion.setIsActive(false);
         promotionRepository.save(promotion);
-    }
-
-    public void decrementUsedCount(Integer promotionId) {
-        Promotion promotion = promotionRepository.findById(promotionId)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy promotion!"));
-
-        promotion.setUsedCount(promotion.getUsedCount() - 1);
-        promotionRepository.save(promotion);
-
-        log.info("Decremented used count for promotion: {}, current count: {}",
-                promotion.getCode(), promotion.getUsedCount());
     }
 }

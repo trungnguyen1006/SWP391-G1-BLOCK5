@@ -58,7 +58,6 @@ public class BookingService {
         if (promotionId != null) {
             Promotion promotion = promotionService.findById(promotionId);
             booking.setPromotion(promotion);
-            promotionService.incrementUsedCount(promotionId);
         }
 
         Booking savedBooking = bookingRepository.save(booking);
@@ -100,7 +99,6 @@ public class BookingService {
             Promotion promotion = promotionRepository.findById(promotionId)
                     .orElseThrow(() -> new RuntimeException("Không tìm thấy promotion!"));
             booking.setPromotion(promotion);
-            promotionService.incrementUsedCount(promotionId);
         }
 
         Booking saved = bookingRepository.save(booking);

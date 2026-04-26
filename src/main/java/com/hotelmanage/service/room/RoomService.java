@@ -84,9 +84,10 @@ public class RoomService {
      */
     public Room save(Room room) {
         log.info("Saving new room: {}", room.getRoomNumber());
-        if (room.getStatus() == null) {
-            room.setStatus(RoomStatus.AVAILABLE);
+        if (roomRepository.existsByRoomNumberAndDeletedAtIsNull(room.getRoomNumber())) {
+            throw new RuntimeException("Số phòng '" + room.getRoomNumber() + "' đã tồn tại!");
         }
+        room.setStatus(RoomStatus.AVAILABLE);
         return roomRepository.save(room);
     }
 
@@ -96,9 +97,14 @@ public class RoomService {
     public Room update(Room room) {
         log.info("Updating room: {}", room.getRoomId());
         Room existing = findById(room.getRoomId());
+        
+        if (!existing.getRoomNumber().equals(room.getRoomNumber()) &&
+                roomRepository.existsByRoomNumberAndDeletedAtIsNull(room.getRoomNumber())) {
+            throw new RuntimeException("Số phòng '" + room.getRoomNumber() + "' đã tồn tại!");
+        }
+        
         existing.setRoomNumber(room.getRoomNumber());
         existing.setRoomType(room.getRoomType());
-        existing.setStatus(room.getStatus());
         return roomRepository.save(existing);
     }
 
@@ -108,6 +114,11 @@ public class RoomService {
     public void delete(Integer id) {
         log.info("Deleting room id: {}", id);
         Room room = findById(id);
+        
+        if (RoomStatus.OCCUPIED.equals(room.getStatus())) {
+            throw new RuntimeException("Không thể xóa phòng đang có khách! Vui lòng chờ khách trả phòng.");
+        }
+        
         room.setDeletedAt(LocalDateTime.now());
         roomRepository.save(room);
     }

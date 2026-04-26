@@ -55,11 +55,26 @@ public class RoomTypeService {
     }
 
     public RoomType save(RoomType roomType) {
+        if (roomType.getRoomTypeName() != null) {
+            roomType.setRoomTypeName(roomType.getRoomTypeName().trim());
+        }
+        if (roomTypeRepository.existsByRoomTypeNameIgnoreCaseAndDeletedAtIsNull(roomType.getRoomTypeName())) {
+            throw new RuntimeException("Tên loại phòng '" + roomType.getRoomTypeName() + "' đã tồn tại!");
+        }
         return roomTypeRepository.save(roomType);
     }
 
     public RoomType update(RoomType roomType) {
+        if (roomType.getRoomTypeName() != null) {
+            roomType.setRoomTypeName(roomType.getRoomTypeName().trim());
+        }
         RoomType existing = findById(roomType.getRoomTypeId());
+        
+        if (!existing.getRoomTypeName().equalsIgnoreCase(roomType.getRoomTypeName()) &&
+                roomTypeRepository.existsByRoomTypeNameIgnoreCaseAndDeletedAtIsNull(roomType.getRoomTypeName())) {
+            throw new RuntimeException("Tên loại phòng '" + roomType.getRoomTypeName() + "' đã tồn tại!");
+        }
+        
         existing.setRoomTypeName(roomType.getRoomTypeName());
         existing.setDescription(roomType.getDescription());
         existing.setDevice(roomType.getDevice());

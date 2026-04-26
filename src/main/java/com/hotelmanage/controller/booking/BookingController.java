@@ -1,6 +1,5 @@
 package com.hotelmanage.controller.booking;
 
-
 import com.hotelmanage.entity.User;
 import com.hotelmanage.entity.booking.Booking;
 import com.hotelmanage.entity.booking.Promotion;
@@ -43,10 +42,10 @@ public class BookingController {
 
     @GetMapping("/search")
     public String searchRooms(@RequestParam(required = false) LocalDate checkInDate,
-                              @RequestParam(required = false) LocalDate checkOutDate,
-                              @RequestParam(required = false) Integer amountPerson,
-                              @RequestParam(required = false) String promotionCode,
-                              Model model) {
+            @RequestParam(required = false) LocalDate checkOutDate,
+            @RequestParam(required = false) Integer amountPerson,
+            @RequestParam(required = false) String promotionCode,
+            Model model) {
 
         if (checkInDate == null) {
             checkInDate = LocalDate.now();
@@ -59,7 +58,6 @@ public class BookingController {
         }
 
         model.addAttribute("currentStep", 1);
-
 
         if (checkOutDate.isBefore(checkInDate) || checkOutDate.isEqual(checkInDate)) {
             model.addAttribute("error", "Ngày trả phòng phải sau ngày nhận phòng!");
@@ -88,12 +86,12 @@ public class BookingController {
 
     @GetMapping("/room-detail/{roomTypeId}")
     public String roomDetail(@PathVariable Integer roomTypeId,
-                             @RequestParam LocalDate checkInDate,
-                             @RequestParam LocalDate checkOutDate,
-                             @RequestParam Integer amountPerson,
-                             @RequestParam(required = false) String promotionCode,
-                             Principal principal,
-                             Model model) {
+            @RequestParam LocalDate checkInDate,
+            @RequestParam LocalDate checkOutDate,
+            @RequestParam Integer amountPerson,
+            @RequestParam(required = false) String promotionCode,
+            Principal principal,
+            Model model) {
 
         RoomType roomType = roomTypeService.findById(roomTypeId);
 
@@ -113,16 +111,15 @@ public class BookingController {
         return "booking/room-detail";
     }
 
-
     @PostMapping("/select-room")
     public String selectRoom(@RequestParam Integer roomTypeId,
-                             @RequestParam LocalDate checkInDate,
-                             @RequestParam LocalDate checkOutDate,
-                             @RequestParam Integer amountPerson,
-                             @RequestParam(required = false) String promotionCode,
-                             Principal principal,
-                             Model model,
-                             RedirectAttributes redirectAttributes) {
+            @RequestParam LocalDate checkInDate,
+            @RequestParam LocalDate checkOutDate,
+            @RequestParam Integer amountPerson,
+            @RequestParam(required = false) String promotionCode,
+            Principal principal,
+            Model model,
+            RedirectAttributes redirectAttributes) {
 
         try {
             RoomType selectedRoomType = roomTypeService.findById(roomTypeId);
@@ -140,9 +137,14 @@ public class BookingController {
                 try {
                     promotion = promotionService.validatePromotion(promotionCode);
                     discount = promotion.getDiscountAmount();
+                    if (discount.compareTo(totalAmount) > 0) {
+                        throw new RuntimeException("Mã giảm giá chỉ áp dụng cho hóa đơn tối thiểu " + String.format("%,d", discount.longValue()) + " VNĐ!");
+                    }
                     totalAmount = totalAmount.subtract(discount);
                 } catch (RuntimeException e) {
                     model.addAttribute("promotionError", e.getMessage());
+                    promotion = null;
+                    discount = BigDecimal.ZERO;
                 }
             }
 
@@ -169,37 +171,41 @@ public class BookingController {
 
         } catch (RuntimeException e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
-            return redirectToSelectRoom(roomTypeId, checkInDate, checkOutDate, amountPerson, promotionCode, redirectAttributes);
+            return redirectToSelectRoom(roomTypeId, checkInDate, checkOutDate, amountPerson, promotionCode,
+                    redirectAttributes);
         }
     }
 
     @PostMapping("/confirm")
     public String confirmBooking(@RequestParam Integer roomTypeId,
-                                 @RequestParam LocalDate checkInDate,
-                                 @RequestParam LocalDate checkOutDate,
-                                 @RequestParam Integer amountPerson,
-                                 @RequestParam(required = false) String promotionCode,
-                                 @RequestParam(required = false) String customerName,
-                                 @RequestParam(required = false) String customerPhone,
-                                 @RequestParam(required = false) String customerEmail,
-                                 @RequestParam(required = false) String customerAddress,
-                                 Principal principal,
-                                 RedirectAttributes redirectAttributes) {
+            @RequestParam LocalDate checkInDate,
+            @RequestParam LocalDate checkOutDate,
+            @RequestParam Integer amountPerson,
+            @RequestParam(required = false) String promotionCode,
+            @RequestParam(required = false) String customerName,
+            @RequestParam(required = false) String customerPhone,
+            @RequestParam(required = false) String customerEmail,
+            @RequestParam(required = false) String customerAddress,
+            Principal principal,
+            RedirectAttributes redirectAttributes) {
 
         try {
             // Validate thông tin khách hàng bắt buộc (khi không đăng nhập)
             if (principal == null) {
                 if (customerName == null || customerName.trim().isEmpty()) {
                     redirectAttributes.addFlashAttribute("error", "Vui lòng nhập tên khách hàng!");
-                    return redirectToSelectRoom(roomTypeId, checkInDate, checkOutDate, amountPerson, promotionCode, redirectAttributes);
+                    return redirectToSelectRoom(roomTypeId, checkInDate, checkOutDate, amountPerson, promotionCode,
+                            redirectAttributes);
                 }
                 if (customerPhone == null || customerPhone.trim().isEmpty()) {
                     redirectAttributes.addFlashAttribute("error", "Vui lòng nhập số điện thoại!");
-                    return redirectToSelectRoom(roomTypeId, checkInDate, checkOutDate, amountPerson, promotionCode, redirectAttributes);
+                    return redirectToSelectRoom(roomTypeId, checkInDate, checkOutDate, amountPerson, promotionCode,
+                            redirectAttributes);
                 }
                 if (customerEmail == null || customerEmail.trim().isEmpty()) {
                     redirectAttributes.addFlashAttribute("error", "Vui lòng nhập email!");
-                    return redirectToSelectRoom(roomTypeId, checkInDate, checkOutDate, amountPerson, promotionCode, redirectAttributes);
+                    return redirectToSelectRoom(roomTypeId, checkInDate, checkOutDate, amountPerson, promotionCode,
+                            redirectAttributes);
                 }
             }
 
@@ -218,11 +224,16 @@ public class BookingController {
             if (promotionCode != null && !promotionCode.isEmpty()) {
                 try {
                     Promotion promotion = promotionService.validatePromotion(promotionCode);
-                    totalAmount = totalAmount.subtract(promotion.getDiscountAmount());
+                    BigDecimal discountAmt = promotion.getDiscountAmount();
+                    if (discountAmt.compareTo(totalAmount) > 0) {
+                        throw new RuntimeException("Mã giảm giá chỉ áp dụng cho hóa đơn tối thiểu " + String.format("%,d", discountAmt.longValue()) + " VNĐ!");
+                    }
+                    totalAmount = totalAmount.subtract(discountAmt);
                     promotionId = promotion.getPromotionId();
-                    log.info("Applied promotion: {}, discount: {}", promotionCode, promotion.getDiscountAmount());
+                    log.info("Applied promotion: {}, discount: {}", promotionCode, discountAmt);
                 } catch (RuntimeException e) {
                     log.warn("Invalid promotion code: {}", promotionCode);
+                    throw new RuntimeException(e.getMessage());
                 }
             }
 
@@ -235,8 +246,7 @@ public class BookingController {
                         checkInDate,
                         checkOutDate,
                         totalAmount,
-                        promotionId
-                );
+                        promotionId);
                 log.info("Created booking for logged-in user: {}", principal.getName());
             } else {
                 booking = bookingService.createGuestBooking(
@@ -247,8 +257,7 @@ public class BookingController {
                         promotionId,
                         customerPhone,
                         customerEmail,
-                        customerAddress
-                );
+                        customerAddress);
                 log.info("Created guest booking for: {}", customerName);
             }
 
@@ -259,17 +268,17 @@ public class BookingController {
         } catch (RuntimeException e) {
             log.error("Error creating booking: {}", e.getMessage(), e);
             redirectAttributes.addFlashAttribute("error", e.getMessage());
-            return redirectToSelectRoom(roomTypeId, checkInDate, checkOutDate, amountPerson, promotionCode, redirectAttributes);
+            return redirectToSelectRoom(roomTypeId, checkInDate, checkOutDate, amountPerson, promotionCode,
+                    redirectAttributes);
         }
     }
-
 
     /**
      * Helper method để redirect về select-room với params
      */
     private String redirectToSelectRoom(Integer roomTypeId, LocalDate checkInDate,
-                                        LocalDate checkOutDate, Integer amountPerson,
-                                        String promotionCode, RedirectAttributes redirectAttributes) {
+            LocalDate checkOutDate, Integer amountPerson,
+            String promotionCode, RedirectAttributes redirectAttributes) {
         redirectAttributes.addFlashAttribute("roomTypeId", roomTypeId);
         redirectAttributes.addFlashAttribute("checkInDate", checkInDate);
         redirectAttributes.addFlashAttribute("checkOutDate", checkOutDate);
@@ -295,6 +304,5 @@ public class BookingController {
 
         return "booking/view-booking-history";
     }
-
 
 }

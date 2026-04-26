@@ -48,4 +48,9 @@ public interface RoomTypeRepository extends JpaRepository<RoomType, Integer> {
     Page<RoomType> findAllActive(Pageable pageable);
 
     Page<RoomType> findByRoomTypeNameContainingIgnoreCaseAndDeletedAtIsNull(String keyword, Pageable pageable);
+
+    boolean existsByRoomTypeNameIgnoreCaseAndDeletedAtIsNull(String roomTypeName);
+
+    @Query("SELECT COUNT(rt) FROM RoomType rt WHERE rt.deletedAt IS NULL")
+    long countAllActive();
 }

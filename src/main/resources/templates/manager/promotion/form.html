@@ -63,7 +63,7 @@
                         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                     </div>
 
-                    <form th:action="${promotion.promotionId != null ? '/manager/promotions/edit/' + promotion.promotionId : '/manager/promotions/create'}"
+                    <form th:action="@{${promotion.promotionId != null ? '/manager/promotions/edit/' + promotion.promotionId : '/manager/promotions/create'}}"
                           th:object="${promotion}"
                           method="post">
 
@@ -73,12 +73,13 @@
                                    class="form-control"
                                    id="code"
                                    th:field="*{code}"
-                                   placeholder="VD: SUMMER2024, WELCOME50"
+                                   placeholder="VD: SUMMER2024, WELCOME_50"
                                    required
-                                   pattern="[A-Z0-9]+"
+                                   pattern="[A-Z0-9_\-]+"
                                    oninput="this.value = this.value.toUpperCase(); updateCodePreview(this.value)">
-                            <div class="help-text">Chỉ sử dụng chữ IN HOA và số, không có khoảng trắng</div>
+                            <div class="help-text">Chỉ sử dụng chữ IN HOA, số, dấu _ hoặc - (3-20 ký tự)</div>
                             <div class="code-preview" id="codePreview" th:text="${promotion.code != null ? promotion.code : 'MÃ GIẢM GIÁ'}"></div>
+                            <div class="text-danger mt-1" th:if="${#fields.hasErrors('code')}" th:errors="*{code}"></div>
                         </div>
 
                         <div class="mb-3">
@@ -90,8 +91,9 @@
                                    placeholder="VD: 100000"
                                    required
                                    min="1000"
-                                   step="1000">
+                                   step="1">
                             <div class="help-text">Tối thiểu 1.000đ</div>
+                            <div class="text-danger mt-1" th:if="${#fields.hasErrors('discountAmount')}" th:errors="*{discountAmount}"></div>
                         </div>
 
                         <div class="form-row mb-3">
@@ -102,6 +104,7 @@
                                        id="startDate"
                                        th:field="*{startDate}"
                                        required>
+                                <div class="text-danger mt-1" th:if="${#fields.hasErrors('startDate')}" th:errors="*{startDate}"></div>
                             </div>
 
                             <div>
@@ -111,18 +114,8 @@
                                        id="endDate"
                                        th:field="*{endDate}"
                                        required>
+                                <div class="text-danger mt-1" th:if="${#fields.hasErrors('endDate')}" th:errors="*{endDate}"></div>
                             </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="usageLimit" class="form-label">Giới Hạn Sử Dụng</label>
-                            <input type="number"
-                                   class="form-control"
-                                   id="usageLimit"
-                                   th:field="*{usageLimit}"
-                                   placeholder="Để trống = Không giới hạn"
-                                   min="1">
-                            <div class="help-text">Số lần tối đa mã có thể được sử dụng. Để trống nếu không giới hạn</div>
                         </div>
 
                         <div class="mb-3">
@@ -145,6 +138,7 @@
                             </button>
                         </div>
                     </form>
+
                 </div>
             </div>
         </div>
@@ -158,10 +152,7 @@
             preview.textContent = value || 'MÃ GIẢM GIÁ';
         }
 
-        // Set minimum date for startDate to today
-        document.getElementById('startDate').min = new Date().toISOString().split('T')[0];
-
-        // Update endDate minimum when startDate changes
+        // Cập nhật endDate minimum khi startDate thay đổi
         document.getElementById('startDate').addEventListener('change', function() {
             document.getElementById('endDate').min = this.value;
         });

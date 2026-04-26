@@ -1,6 +1,7 @@
 package com.hotelmanage.entity.room;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -21,6 +22,7 @@ public class RoomType {
     @Column(name = "room_type_id")
     private Integer roomTypeId;
 
+    @NotBlank(message = "Tên loại phòng không được để trống")
     @Column(name = "room_type_name", nullable = false)
     private String roomTypeName;
 
@@ -36,6 +38,9 @@ public class RoomType {
     @Column(name = "utilities", columnDefinition = "TEXT")
     private String utilities;
 
+    @NotNull(message = "Giá không được để trống")
+    @Min(value = 1000, message = "Giá phải lớn hơn 1,000 VNĐ")
+    @Max(value = 1000000000, message = "Giá phải nhỏ hơn 1,000,000,000 VNĐ")
     @Column(name = "price", nullable = false, precision = 10, scale = 2)
     private BigDecimal price;
 

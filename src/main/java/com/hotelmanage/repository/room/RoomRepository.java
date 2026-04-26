@@ -65,6 +65,8 @@ ORDER BY r.roomNumber ASC
 """)
     Page<Room> searchActiveRooms(@Param("keyword") String keyword, Pageable pageable);
 
+    boolean existsByRoomNumberAndDeletedAtIsNull(String roomNumber);
+
     // Dashboard queries
     @Query("SELECT COUNT(r) FROM Room r WHERE r.deletedAt IS NULL")
     Long countTotalRooms();

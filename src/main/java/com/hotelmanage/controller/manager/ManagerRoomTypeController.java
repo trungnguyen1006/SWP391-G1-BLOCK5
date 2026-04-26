@@ -95,6 +95,7 @@ public class ManagerRoomTypeController {
                                  BindingResult result,
                                  RedirectAttributes redirectAttributes) {
         if (result.hasErrors()) {
+            roomType.setRoomTypeId(id);
             return "manager/room-type-form";
         }
 

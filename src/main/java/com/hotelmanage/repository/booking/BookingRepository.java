@@ -35,6 +35,9 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     @Query("SELECT COUNT(b) FROM Booking b")
     Long countTotalBookings();
 
+    @Query("SELECT COUNT(b) FROM Booking b WHERE YEAR(b.createdAt) = :year AND MONTH(b.createdAt) = :month")
+    Long countMonthlyBookings(@Param("year") int year, @Param("month") int month);
+
     @Query("SELECT COALESCE(SUM(b.totalPrice), 0) FROM Booking b WHERE b.status = 'CONFIRMED'")
     BigDecimal calculateTotalRevenue();
 

@@ -11,5 +11,7 @@ public interface FeedbackRepository extends JpaRepository<Feedback, Long> {
     List<Feedback> findAllByOrderByCreatedAtDesc();
 
     List<Feedback> findByCategoryOrderByCreatedAtDesc(FeedbackCategory category);
+
+    long count();
 }
 

@@ -31,6 +31,11 @@
             color: #856404;
         }
 
+        .badge-pending {
+            background: #e2e3e5;
+            color: #383d41;
+        }
+
         .code-cell {
             font-family: 'Courier New', monospace;
             font-weight: 600;
@@ -70,6 +75,29 @@
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
 
+    <div class="card mb-4">
+        <div class="card-body">
+            <form th:action="@{/manager/promotions}" method="get" class="row g-3">
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <input type="text" class="form-control" name="q" th:value="${q}" placeholder="Tìm kiếm theo mã code...">
+                        <button class="btn btn-outline-secondary" type="submit"><i class="bi bi-search"></i> Tìm kiếm</button>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <select name="sort" class="form-select" onchange="this.form.submit()">
+                        <option value="">-- Sắp xếp theo giá --</option>
+                        <option value="asc" th:selected="${sort == 'asc'}">Giá tăng dần</option>
+                        <option value="desc" th:selected="${sort == 'desc'}">Giá giảm dần</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <a th:href="@{/manager/promotions}" class="btn btn-outline-secondary w-100">Xóa Lọc</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <div class="card">
         <div class="card-body">
             <table class="table table-hover" th:if="${promotions != null && !promotions.isEmpty()}">
@@ -78,7 +106,6 @@
                     <th>ID</th>
                     <th>Mã Code</th>
                     <th>Giảm Giá</th>
-                    <th>Giới Hạn/Đã Dùng</th>
                     <th>Thời Gian</th>
                     <th>Trạng Thái</th>
                     <th>Thao Tác</th>
@@ -90,27 +117,22 @@
                     <td class="code-cell" th:text="${promotion.code}"></td>
                     <td th:text="${#numbers.formatDecimal(promotion.discountAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'"></td>
                     <td>
-                        <span th:text="${promotion.usageLimit != null ? promotion.usageLimit : 'Không giới hạn'}"></span>
-                        /
-                        <span th:text="${promotion.usedCount}"></span>
-                    </td>
-                    <td>
                         <div th:text="${#temporals.format(promotion.startDate, 'dd/MM/yyyy')}"></div>
                         <div th:text="'→ ' + ${#temporals.format(promotion.endDate, 'dd/MM/yyyy')}"></div>
                     </td>
                     <td>
-                        <span th:if="${promotion.isActive && #temporals.createToday().isAfter(promotion.endDate)}"
-                              class="badge badge-expired">
-                            Hết hạn
-                        </span>
-                        <span th:if="${promotion.isActive && !#temporals.createToday().isAfter(promotion.endDate)}"
-                              class="badge badge-active">
-                            Hoạt động
-                        </span>
-                        <span th:unless="${promotion.isActive}"
-                              class="badge badge-inactive">
-                            Vô hiệu hóa
-                        </span>
+                        <!-- Hết hạn: endDate đã qua (bất kể isActive) -->
+                        <span th:if="${#temporals.createToday().isAfter(promotion.endDate)}"
+                              class="badge badge-expired">Hết hạn</span>
+                        <!-- Chưa bắt đầu: startDate chưa đến -->
+                        <span th:if="${!#temporals.createToday().isAfter(promotion.endDate) && #temporals.createToday().isBefore(promotion.startDate)}"
+                              class="badge badge-pending">Chưa bắt đầu</span>
+                        <!-- Vô hiệu hóa: còn hạn nhưng isActive = false -->
+                        <span th:if="${!#temporals.createToday().isAfter(promotion.endDate) && !#temporals.createToday().isBefore(promotion.startDate) && !promotion.isActive}"
+                              class="badge badge-inactive">Vô hiệu hóa</span>
+                        <!-- Hoạt động: còn hạn và isActive = true -->
+                        <span th:if="${!#temporals.createToday().isAfter(promotion.endDate) && !#temporals.createToday().isBefore(promotion.startDate) && promotion.isActive}"
+                              class="badge badge-active">Hoạt động</span>
                     </td>
                     <td>
                         <div class="actions">
@@ -118,25 +140,6 @@
                                class="btn btn-sm btn-warning">
                                 <i class="bi bi-pencil"></i> Sửa
                             </a>
-
-                            <form th:if="${promotion.isActive}"
-                                  th:action="@{/manager/promotions/deactivate/{id}(id=${promotion.promotionId})}"
-                                  method="post"
-                                  style="display: inline;">
-                                <button type="submit" class="btn btn-sm btn-danger"
-                                        onclick="return confirm('Bạn có chắc muốn vô hiệu hóa mã này?')">
-                                    <i class="bi bi-x-circle"></i> Vô hiệu
-                                </button>
-                            </form>
-
-                            <form th:unless="${promotion.isActive}"
-                                  th:action="@{/manager/promotions/activate/{id}(id=${promotion.promotionId})}"
-                                  method="post"
-                                  style="display: inline;">
-                                <button type="submit" class="btn btn-sm btn-success">
-                                    <i class="bi bi-check-circle"></i> Kích hoạt
-                                </button>
-                            </form>
                         </div>
                     </td>
                 </tr>

@@ -2,9 +2,11 @@ package com.hotelmanage.controller.manager;
 
 import com.hotelmanage.entity.booking.Promotion;
 import com.hotelmanage.service.booking.PromotionService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -18,9 +20,13 @@ public class PromotionController {
     private final PromotionService promotionService;
 
     @GetMapping
-    public String listPromotions(Model model) {
-        List<Promotion> promotions = promotionService.findAll();
+    public String listPromotions(@RequestParam(value = "q", required = false) String keyword,
+                                 @RequestParam(value = "sort", required = false) String sortDirection,
+                                 Model model) {
+        List<Promotion> promotions = promotionService.searchAndSort(keyword, sortDirection);
         model.addAttribute("promotions", promotions);
+        model.addAttribute("q", keyword);
+        model.addAttribute("sort", sortDirection);
         return "manager/promotion/list";
     }
 
@@ -31,15 +37,23 @@ public class PromotionController {
     }
 
     @PostMapping("/create")
-    public String createPromotion(@ModelAttribute Promotion promotion,
+    public String createPromotion(@Valid @ModelAttribute("promotion") Promotion promotion,
+                                  BindingResult result,
+                                  Model model,
                                   RedirectAttributes redirectAttributes) {
+        if (result.hasErrors()) {
+            return "manager/promotion/form";
+        }
+        if (promotion.getIsActive() == null) {
+            promotion.setIsActive(false);
+        }
         try {
             promotionService.save(promotion);
             redirectAttributes.addFlashAttribute("success", "Tạo mã giảm giá thành công!");
             return "redirect:/manager/promotions";
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Lỗi: " + e.getMessage());
-            return "redirect:/manager/promotions/create";
+            model.addAttribute("error", e.getMessage());
+            return "manager/promotion/form";
         }
     }
 
@@ -52,8 +66,16 @@ public class PromotionController {
 
     @PostMapping("/edit/{id}")
     public String updatePromotion(@PathVariable Integer id,
-                                  @ModelAttribute Promotion promotion,
+                                  @Valid @ModelAttribute("promotion") Promotion promotion,
+                                  BindingResult result,
                                   RedirectAttributes redirectAttributes) {
+        if (result.hasErrors()) {
+            promotion.setPromotionId(id);
+            return "manager/promotion/form";
+        }
+        if (promotion.getIsActive() == null) {
+            promotion.setIsActive(false);
+        }
         try {
             promotion.setPromotionId(id);
             promotionService.update(promotion);
@@ -63,31 +85,5 @@ public class PromotionController {
             redirectAttributes.addFlashAttribute("error", "Lỗi: " + e.getMessage());
             return "redirect:/manager/promotions/edit/" + id;
         }
-    }
-
-    @PostMapping("/deactivate/{id}")
-    public String deactivatePromotion(@PathVariable Integer id,
-                                      RedirectAttributes redirectAttributes) {
-        try {
-            promotionService.deactivate(id);
-            redirectAttributes.addFlashAttribute("success", "Vô hiệu hóa mã giảm giá thành công!");
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Lỗi: " + e.getMessage());
-        }
-        return "redirect:/manager/promotions";
-    }
-
-    @PostMapping("/activate/{id}")
-    public String activatePromotion(@PathVariable Integer id,
-                                    RedirectAttributes redirectAttributes) {
-        try {
-            Promotion promotion = promotionService.findById(id);
-            promotion.setIsActive(true);
-            promotionService.save(promotion);
-            redirectAttributes.addFlashAttribute("success", "Kích hoạt mã giảm giá thành công!");
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Lỗi: " + e.getMessage());
-        }
-        return "redirect:/manager/promotions";
     }
 }

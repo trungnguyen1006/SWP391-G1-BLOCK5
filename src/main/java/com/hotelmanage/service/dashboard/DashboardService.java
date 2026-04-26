@@ -1,20 +1,21 @@
 package com.hotelmanage.service.dashboard;
 
-import com.hotelmanage.entity.Enum.BookingStatus;
 import com.hotelmanage.repository.UserRepository;
+import com.hotelmanage.repository.blog.BlogRepository;
 import com.hotelmanage.repository.booking.BookingRepository;
+import com.hotelmanage.repository.booking.PromotionRepository;
+import com.hotelmanage.repository.feedback.FeedbackRepository;
+import com.hotelmanage.repository.restaurant.RestaurantRepository;
 import com.hotelmanage.repository.room.RoomRepository;
+import com.hotelmanage.repository.room.RoomTypeRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.HashMap;
 import java.util.Map;
-import java.time.format.TextStyle;
-import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -22,148 +23,66 @@ import java.util.*;
 public class DashboardService {
 
     private final RoomRepository roomRepository;
+    private final RoomTypeRepository roomTypeRepository;
     private final UserRepository userRepository;
     private final BookingRepository bookingRepository;
+    private final FeedbackRepository feedbackRepository;
+    private final BlogRepository blogRepository;
+    private final RestaurantRepository restaurantRepository;
+    private final PromotionRepository promotionRepository;
 
     /**
-     * Thống kê tổng quan — mỗi metric có try-catch riêng
+     * Thống kê tổng quan cho Dashboard — trả về Map để đổ vào Thymeleaf model
      */
     public Map<String, Object> getDashboardStats() {
         Map<String, Object> stats = new HashMap<>();
+        YearMonth currentMonth = YearMonth.now();
+        LocalDate today = LocalDate.now();
 
-        try {
-            Long totalRooms = roomRepository.countTotalRooms();
-            stats.put("totalRooms", totalRooms != null ? totalRooms : 0L);
-        } catch (Exception e) {
-            log.error("Error counting total rooms", e);
-            stats.put("totalRooms", 0L);
-        }
+        // 1. Tổng số phòng
+        safeput(stats, "totalRooms", () -> roomRepository.countTotalRooms());
 
-        try {
-            Long availableRooms = roomRepository.countAvailableRooms();
-            stats.put("availableRooms", availableRooms != null ? availableRooms : 0L);
-        } catch (Exception e) {
-            log.error("Error counting available rooms", e);
-            stats.put("availableRooms", 0L);
-        }
+        // 2. Phòng trống
+        safeput(stats, "availableRooms", () -> roomRepository.countAvailableRooms());
 
-        try {
-            Long activeUsers = userRepository.countActiveUsers();
-            stats.put("activeUsers", activeUsers != null ? activeUsers : 0L);
-        } catch (Exception e) {
-            log.error("Error counting active users", e);
-            stats.put("activeUsers", 0L);
-        }
+        // 3. Đặt phòng tháng này
+        safeput(stats, "monthlyBookings", () ->
+                bookingRepository.countMonthlyBookings(currentMonth.getYear(), currentMonth.getMonthValue()));
 
-        try {
-            Long totalBookings = bookingRepository.countTotalBookings();
-            stats.put("totalBookings", totalBookings != null ? totalBookings : 0L);
-        } catch (Exception e) {
-            log.error("Error counting total bookings", e);
-            stats.put("totalBookings", 0L);
-        }
+        // 4. Doanh thu tháng này
+        safeput(stats, "monthlyRevenue", () ->
+                bookingRepository.calculateMonthlyRevenue(currentMonth.getYear(), currentMonth.getMonthValue()));
 
-        try {
-            BigDecimal totalRevenue = bookingRepository.calculateTotalRevenue();
-            stats.put("totalRevenue", totalRevenue != null ? totalRevenue : BigDecimal.ZERO);
-        } catch (Exception e) {
-            log.error("Error calculating total revenue", e);
-            stats.put("totalRevenue", BigDecimal.ZERO);
-        }
+        // 5. Tổng số loại phòng
+        safeput(stats, "totalRoomTypes", () -> roomTypeRepository.countAllActive());
 
-        try {
-            YearMonth currentMonth = YearMonth.now();
-            BigDecimal monthlyRevenue = bookingRepository.calculateMonthlyRevenue(
-                    currentMonth.getYear(), currentMonth.getMonthValue());
-            stats.put("monthlyRevenue", monthlyRevenue != null ? monthlyRevenue : BigDecimal.ZERO);
+        // 6. Tổng số blog
+        safeput(stats, "totalBlogs", () -> blogRepository.count());
 
-            log.info("Dashboard stats retrieved successfully");
+        // 7. Tổng số feedback
+        safeput(stats, "totalFeedbacks", () -> feedbackRepository.count());
 
-        } catch (Exception e) {
-            log.error("Error retrieving dashboard stats", e);
-            stats.put("totalRooms", 0L);
-            stats.put("availableRooms", 0L);
-            stats.put("activeUsers", 0L);
-            stats.put("totalBookings", 0L);
-            stats.put("totalRevenue", BigDecimal.ZERO);
-            stats.put("monthlyRevenue", BigDecimal.ZERO);
-        }
+        // 8. Tổng số nhà hàng
+        safeput(stats, "totalRestaurants", () -> restaurantRepository.count());
 
-        log.info("Dashboard stats retrieved");
+        // 9. Promotion đang hoạt động
+        safeput(stats, "activePromotions", () -> promotionRepository.countActivePromotions(today));
+
+        log.info("Dashboard stats loaded successfully");
         return stats;
     }
 
-    /**
-     * Lấy doanh thu theo khoảng thời gian
-     */
-    public BigDecimal getRevenueByDateRange(LocalDateTime startDate, LocalDateTime endDate) {
+    private void safeput(Map<String, Object> stats, String key, StatSupplier supplier) {
         try {
-            BigDecimal revenue = bookingRepository.calculateRevenueByDateRange(startDate, endDate);
-            return revenue != null ? revenue : BigDecimal.ZERO;
+            stats.put(key, supplier.get());
         } catch (Exception e) {
-            log.error("Error calculating revenue by date range", e);
-            return BigDecimal.ZERO;
+            log.error("Error loading stat [{}]: {}", key, e.getMessage());
+            stats.put(key, 0L);
         }
     }
 
-    /**
-     * Lấy thống kê chi tiết
-     */
-    public Map<String, Object> getDetailedStats() {
-        Map<String, Object> stats = getDashboardStats();
-        try {
-            Long activeCustomers = userRepository.countActiveCustomers();
-            stats.put("activeCustomers", activeCustomers != null ? activeCustomers : 0L);
-        } catch (Exception e) {
-            log.error("Error counting active customers", e);
-            stats.put("activeCustomers", 0L);
-        }
-        return stats;
-    }
-
-    /**
-     * Doanh thu 6 tháng gần nhất — dữ liệu cho bar chart
-     */
-    public Map<String, Object> getLast6MonthsRevenue() {
-        List<String> labels = new ArrayList<>();
-        List<BigDecimal> data = new ArrayList<>();
-        YearMonth current = YearMonth.now();
-
-        for (int i = 5; i >= 0; i--) {
-            YearMonth month = current.minusMonths(i);
-            String label = month.getMonth().getDisplayName(TextStyle.SHORT, Locale.forLanguageTag("vi"))
-                    + " " + month.getYear();
-            BigDecimal revenue;
-            try {
-                revenue = bookingRepository.calculateMonthlyRevenue(month.getYear(), month.getMonthValue());
-            } catch (Exception e) {
-                log.error("Error getting revenue for {}", month, e);
-                revenue = BigDecimal.ZERO;
-            }
-            labels.add(label);
-            data.add(revenue != null ? revenue : BigDecimal.ZERO);
-        }
-
-        Map<String, Object> result = new HashMap<>();
-        result.put("labels", labels);
-        result.put("data", data);
-        return result;
-    }
-
-    /**
-     * Số booking theo từng trạng thái — dữ liệu cho doughnut chart
-     */
-    public Map<String, Long> getBookingStatusBreakdown() {
-        Map<String, Long> breakdown = new LinkedHashMap<>();
-        for (BookingStatus status : BookingStatus.values()) {
-            try {
-                Long count = bookingRepository.countByStatus(status);
-                breakdown.put(status.name(), count != null ? count : 0L);
-            } catch (Exception e) {
-                log.error("Error counting bookings for status {}", status, e);
-                breakdown.put(status.name(), 0L);
-            }
-        }
-        return breakdown;
+    @FunctionalInterface
+    private interface StatSupplier {
+        Object get() throws Exception;
     }
 }

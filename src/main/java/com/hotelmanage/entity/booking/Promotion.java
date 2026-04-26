@@ -30,16 +30,11 @@ public class Promotion {
     private String code;
 
     @NotNull(message = "Số tiền giảm không được để trống")
-    @DecimalMin(value = "0.01", message = "Số tiền giảm phải lớn hơn 0")
+    @Min(value = 1000, message = "Số tiền giảm phải từ 1,000 VNĐ")
     @Column(name = "discount_amount", nullable = false, precision = 10, scale = 2)
     private BigDecimal discountAmount;
 
-    @Min(value = 1, message = "Giới hạn sử dụng phải ít nhất là 1")
-    @Column(name = "usage_limit")
-    private Integer usageLimit;
 
-    @Column(name = "used_count")
-    private Integer usedCount = 0;
 
     @NotNull(message = "Ngày bắt đầu không được để trống")
     @Column(name = "start_date", nullable = false)

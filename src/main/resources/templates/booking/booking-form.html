@@ -348,7 +348,7 @@
             <h2 class="card-title"><i class="bi bi-search"></i> Tìm Kiếm Phòng</h2>
             <form th:action="@{/booking/search}" method="get" id="searchForm">
                 <div class="row g-3">
-                    <div class="col-md-6 col-lg-3">
+                    <div class="col-md-4 col-lg-3">
                         <label for="checkInDate" class="form-label">
                             <i class="bi bi-calendar-check"></i> Ngày nhận phòng
                         </label>
@@ -356,7 +356,7 @@
                                th:value="${checkInDate != null ? checkInDate : #temporals.format(#temporals.createNow(), 'yyyy-MM-dd')}"
                                required>
                     </div>
-                    <div class="col-md-6 col-lg-3">
+                    <div class="col-md-4 col-lg-3">
                         <label for="checkOutDate" class="form-label">
                             <i class="bi bi-calendar-x"></i> Ngày trả phòng
                         </label>
@@ -364,7 +364,7 @@
                                th:value="${checkOutDate != null ? checkOutDate : #temporals.format(#temporals.createNow().plusDays(1), 'yyyy-MM-dd')}"
                                required>
                     </div>
-                    <div class="col-md-6 col-lg-2">
+                    <div class="col-md-4 col-lg-3">
                         <label for="amountPerson" class="form-label">
                             <i class="bi bi-people"></i> Số người
                         </label>
@@ -375,14 +375,7 @@
                             <option value="4" th:selected="${amountPerson == 4}">4 người</option>
                         </select>
                     </div>
-                    <div class="col-md-6 col-lg-2">
-                        <label for="promotionCode" class="form-label">
-                            <i class="bi bi-gift"></i> Mã khuyến mãi
-                        </label>
-                        <input type="text" class="form-control" id="promotionCode" name="promotionCode"
-                               th:value="${promotionCode}" placeholder="Nhập mã">
-                    </div>
-                    <div class="col-md-12 col-lg-2">
+                    <div class="col-md-12 col-lg-3">
                         <label class="form-label d-none d-lg-block">&nbsp;</label>
                         <button type="submit" class="btn btn-primary-custom w-100">
                             <i class="bi bi-search"></i> Tìm kiếm
@@ -465,7 +458,6 @@
                             <input type="hidden" name="checkInDate" th:value="${checkInDate}">
                             <input type="hidden" name="checkOutDate" th:value="${checkOutDate}">
                             <input type="hidden" name="amountPerson" th:value="${amountPerson}">
-                            <input type="hidden" name="promotionCode" th:value="${promotionCode}">
                             <button type="submit" class="btn btn-success-custom w-100">
                                 <i class="bi bi-check-circle"></i> Chọn Phòng
                             </button>
@@ -500,7 +492,6 @@
                 <input type="hidden" name="checkInDate" th:value="${checkInDate}">
                 <input type="hidden" name="checkOutDate" th:value="${checkOutDate}">
                 <input type="hidden" name="amountPerson" th:value="${amountPerson}">
-                <input type="hidden" name="promotionCode" th:value="${promotionCode}">
 
                 <!-- Guest Information (if not logged in) -->
                 <div th:if="${currentUser == null}" class="mb-4">
@@ -596,6 +587,17 @@
                 </div>
 
 
+                <!-- Promotion Code -->
+                <div class="mb-4">
+                    <h5 class="mb-3"><i class="bi bi-gift"></i> Mã Khuyến Mãi</h5>
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="promotionCode" name="promotionCode"
+                               th:value="${promotionCode}" placeholder="Nhập mã giảm giá (nếu có)">
+                        <button class="btn btn-outline-primary" type="button" onclick="applyPromotion()">Áp dụng</button>
+                    </div>
+                    <div class="text-danger mt-2" th:if="${promotionError}" th:text="${promotionError}"></div>
+                </div>
+
                 <!-- Booking Summary -->
                 <div class="booking-summary">
                     <h5 class="mb-3"><i class="bi bi-receipt"></i> Tổng Quan Đơn Hàng</h5>
@@ -619,9 +621,9 @@
 
 
                 <div class="d-flex justify-content-between mt-4">
-                    <button type="button" class="btn btn-secondary-custom" onclick="window.history.back()">
+                    <a th:href="@{/booking/search(checkInDate=${checkInDate},checkOutDate=${checkOutDate},amountPerson=${amountPerson})}" class="btn btn-secondary-custom text-decoration-none">
                         <i class="bi bi-arrow-left"></i> Quay Lại
-                    </button>
+                    </a>
                     <button type="submit" class="btn btn-success-custom">
                         <i class="bi bi-check-circle"></i> Xác Nhận Đặt Phòng
                     </button>
@@ -745,6 +747,13 @@
     document.getElementById('checkInDate')?.addEventListener('change', function() {
         document.getElementById('checkOutDate')?.setAttribute('min', this.value);
     });
+
+    function applyPromotion() {
+        const form = document.getElementById('bookingForm');
+        // Tạm thời đổi action về select-room để tính lại tổng tiền có mã giảm giá
+        form.action = '/booking/select-room';
+        form.submit();
+    }
 </script>
 </body>
 </html>
