@@ -380,7 +380,7 @@ CREATE TABLE `payment` (
 --
 
 CREATE TABLE `restaurant` (
-  `restaurant_id` bigint NOT NULL,
+  `restaurant_id` bigint NOT NULL AUTO_INCREMENT,
   `deleted_at` datetime(6) DEFAULT NULL,
   `image_url` varchar(1000) DEFAULT NULL,
   `name` varchar(255) NOT NULL,
@@ -389,11 +389,12 @@ CREATE TABLE `restaurant` (
   `price_range` varchar(64) DEFAULT NULL,
   `promotion_text` varchar(255) DEFAULT NULL,
   `description` varchar(2000) DEFAULT NULL,
-  `contact_info` varchar(255) DEFAULT NULL
+  `contact_info` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`restaurant_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 ALTER TABLE restaurant
-    ADD COLUMN max_tables    INT     NOT NULL DEFAULT 10    COMMENT 'Số booking tối đa mỗi ca',
+
     ADD COLUMN has_morning   BOOLEAN NOT NULL DEFAULT FALSE COMMENT 'Ca sáng 07:00-10:00',
     ADD COLUMN has_lunch     BOOLEAN NOT NULL DEFAULT FALSE COMMENT 'Ca trưa 11:00-14:00',
     ADD COLUMN has_afternoon BOOLEAN NOT NULL DEFAULT FALSE COMMENT 'Ca chiều 14:00-17:00',
@@ -541,7 +542,8 @@ CREATE TABLE `setting` (
 INSERT INTO `users` (`user_id`, `avatar_url`, `deleted_at`, `email`, `password`, `role_id`, `status`,`phone`, `address`, `username`) VALUES
 (1, NULL, NULL, 'nguyenhoang173073@gmail.com', '$2a$10$p31zEEVaGcvhHnaY0bXuHusEfca6UbyHhMLmlWXoqxWIgWqVt3HAq', 'ADMIN', 'ACTIVE','012345678','Ha Noi', 'phuchoang'),
 (2, NULL, NULL, 'hoangnam242009@gmail.com', '$2a$10$p31zEEVaGcvhHnaY0bXuHusEfca6UbyHhMLmlWXoqxWIgWqVt3HAq', 'CUSTOMER', 'ACTIVE','012345679','Ha Noi', 'hoangnam'),
-(3, NULL, NULL, 'nguyenhoang300281@gmail.com', '$2a$10$p31zEEVaGcvhHnaY0bXuHusEfca6UbyHhMLmlWXoqxWIgWqVt3HAq', 'RECEPTIONIST', 'ACTIVE','012345676','Ha Noi', 'namhoang');
+(3, NULL, NULL, 'nguyenhoang300281@gmail.com', '$2a$10$p31zEEVaGcvhHnaY0bXuHusEfca6UbyHhMLmlWXoqxWIgWqVt3HAq', 'RECEPTIONIST', 'ACTIVE','012345676','Ha Noi', 'namhoang'),
+(4,NULL,NULL,'hoanganh@gmail.com','$2a$10$PGIrnTz0nyTMdFOmHzTcbO0Q9hgx8vYw4/4joxyQjnKH/f5NgUlFu','MANAGER','ACTIVE','0987656789','Ha Noi','hoanganh');
 --
 -- Indexes for dumped tables
 --
@@ -589,8 +591,7 @@ ALTER TABLE `menu`
 --
 -- Indexes for table `restaurant`
 --
-ALTER TABLE `restaurant`
-  ADD PRIMARY KEY (`restaurant_id`);
+
 
 --
 -- Indexes for table `setting`
@@ -684,3 +685,4 @@ COMMIT;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+
