@@ -6,6 +6,8 @@ import com.hotelmanage.entity.User;
 import com.hotelmanage.entity.booking.Booking;
 import com.hotelmanage.repository.UserRepository;
 import com.hotelmanage.repository.booking.BookingRepository;
+import com.hotelmanage.service.MailService;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -24,6 +26,8 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.security.SecureRandom;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -35,6 +39,14 @@ public class AuthController {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final BookingRepository bookingRepository;
+    private final MailService mailService;
+
+    static final String ATTR_REGISTER_PENDING = "register_pending";
+    static final String ATTR_REGISTER_GUEST_ID = "register_guest_id";
+    static final String ATTR_REGISTER_OTP = "register_otp";
+    static final String ATTR_REGISTER_OTP_EXPIRES = "register_otp_expires";
+    static final String ATTR_REGISTER_OTP_ATTEMPTS = "register_otp_attempts";
+    static final int MAX_REGISTER_OTP_ATTEMPTS = 5;
 
     @GetMapping("/login")
     public String loginPage() {
@@ -51,7 +63,7 @@ public class AuthController {
     @Transactional
     public String doRegister(@Valid @ModelAttribute("registerRequest") RegisterRequest req,
                              BindingResult bindingResult,
-                             Model model,
+                             HttpSession session,
                              RedirectAttributes redirectAttributes) {
 
         // Kiểm tra username đã tồn tại
@@ -62,7 +74,7 @@ public class AuthController {
         // Kiểm tra số điện thoại đã được sử dụng (bỏ qua tài khoản GUEST tạm thời)
         if (req.getPhone() != null && !req.getPhone().isBlank()) {
             if (userRepository.existsByPhoneAndRoleNot(req.getPhone(), UserRole.GUEST)) {
-                bindingResult.rejectValue("phone", "phone.exists", "Số điện thoại này đã được đăng ký. Vui lòng đăng nhập.");
+                bindingResult.rejectValue("phone", "phone.exists", "Số điện thoại đã tồn tại, vui lòng dùng số khác.");
             }
         }
 
@@ -75,17 +87,10 @@ public class AuthController {
             if (existingUser.getRole() == UserRole.GUEST) {
                 log.info("Found existing GUEST account with email: {}, upgrading to CUSTOMER", req.getEmail());
 
-                // Kiểm tra username mới không trùng
-                if (bindingResult.hasFieldErrors("username")) {
-                    return "auth/register";
-                }
-
-                // Nâng cấp GUEST lên CUSTOMER
-                upgradeGuestToCustomer(existingUser, req);
-
-                redirectAttributes.addFlashAttribute("success",
-                        "Tài khoản của bạn đã được nâng cấp thành công! Lịch sử đặt phòng đã được liên kết.");
-                return "redirect:/login?upgraded";
+                prepareRegisterOtpSession(req, existingUser.getId(), session);
+                mailService.sendOtp(req.getEmail(), (String) session.getAttribute(ATTR_REGISTER_OTP));
+                redirectAttributes.addFlashAttribute("info", "Mã OTP đã được gửi đến email của bạn.");
+                return "redirect:/register/otp?sent";
             } else {
                 // Nếu là CUSTOMER/ADMIN/RECEPTIONIST -> báo lỗi
                 bindingResult.rejectValue("email", "email.exists", "Email đã được sử dụng");
@@ -96,21 +101,129 @@ public class AuthController {
             return "auth/register";
         }
 
-        // Tạo mới tài khoản CUSTOMER
-        User user = User.builder()
+        prepareRegisterOtpSession(req, null, session);
+        mailService.sendOtp(req.getEmail(), (String) session.getAttribute(ATTR_REGISTER_OTP));
+        redirectAttributes.addFlashAttribute("info", "Mã OTP đã được gửi đến email của bạn.");
+        return "redirect:/register/otp?sent";
+    }
+
+    @GetMapping("/register/otp")
+    public String registerOtpPage(HttpSession session, Model model, RedirectAttributes redirectAttributes) {
+        PendingRegisterRequest pending = (PendingRegisterRequest) session.getAttribute(ATTR_REGISTER_PENDING);
+        if (pending == null) {
+            redirectAttributes.addFlashAttribute("error", "Phiên đăng ký không hợp lệ. Vui lòng đăng ký lại.");
+            return "redirect:/register";
+        }
+        model.addAttribute("otpForm", new OtpForm());
+        model.addAttribute("registerEmail", pending.getEmail());
+        return "auth/register-otp";
+    }
+
+    @PostMapping("/register/otp")
+    @Transactional
+    public String verifyRegisterOtp(@Valid @ModelAttribute("otpForm") OtpForm form,
+                                    BindingResult bindingResult,
+                                    HttpSession session,
+                                    Model model,
+                                    RedirectAttributes redirectAttributes) {
+        PendingRegisterRequest pending = (PendingRegisterRequest) session.getAttribute(ATTR_REGISTER_PENDING);
+        Object expectedOtp = session.getAttribute(ATTR_REGISTER_OTP);
+        Object expiresAt = session.getAttribute(ATTR_REGISTER_OTP_EXPIRES);
+        int attempts = (session.getAttribute(ATTR_REGISTER_OTP_ATTEMPTS) instanceof Integer)
+                ? (Integer) session.getAttribute(ATTR_REGISTER_OTP_ATTEMPTS) : 0;
+
+        if (pending == null || expectedOtp == null || expiresAt == null) {
+            clearRegisterSession(session);
+            redirectAttributes.addFlashAttribute("error", "Phiên OTP không hợp lệ. Vui lòng đăng ký lại.");
+            return "redirect:/register";
+        }
+
+        if (Instant.now().isAfter((Instant) expiresAt)) {
+            bindingResult.reject("otp.expired", "Mã OTP đã hết hạn. Vui lòng gửi lại mã mới.");
+        } else if (!String.valueOf(expectedOtp).equals(form.getOtp())) {
+            attempts++;
+            session.setAttribute(ATTR_REGISTER_OTP_ATTEMPTS, attempts);
+            if (attempts >= MAX_REGISTER_OTP_ATTEMPTS) {
+                clearRegisterSession(session);
+                redirectAttributes.addFlashAttribute("error", "Bạn đã nhập sai OTP quá 5 lần. Vui lòng đăng ký lại.");
+                return "redirect:/register";
+            }
+            bindingResult.rejectValue("otp", "otp.invalid",
+                    "Mã OTP không đúng. Còn " + (MAX_REGISTER_OTP_ATTEMPTS - attempts) + " lần thử.");
+        }
+
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("registerEmail", pending.getEmail());
+            return "auth/register-otp";
+        }
+
+        Long guestId = (Long) session.getAttribute(ATTR_REGISTER_GUEST_ID);
+        if (guestId != null) {
+            User guestUser = userRepository.findById(guestId).orElse(null);
+            if (guestUser != null && guestUser.getRole() == UserRole.GUEST) {
+                upgradeGuestToCustomer(guestUser, pending.toRegisterRequest());
+                log.info("Upgraded GUEST via OTP flow: {}", pending.getUsername());
+            } else {
+                clearRegisterSession(session);
+                redirectAttributes.addFlashAttribute("error", "Không tìm thấy tài khoản cần nâng cấp. Vui lòng đăng ký lại.");
+                return "redirect:/register";
+            }
+        } else {
+            User user = User.builder()
+                    .username(pending.getUsername())
+                    .password(passwordEncoder.encode(pending.getPassword()))
+                    .email(pending.getEmail())
+                    .phone(pending.getPhone())
+                    .address(pending.getAddress())
+                    .role(UserRole.CUSTOMER)
+                    .status(UserStatus.ACTIVE)
+                    .build();
+            userRepository.save(user);
+            log.info("Created new CUSTOMER account via OTP: {}", pending.getUsername());
+        }
+
+        clearRegisterSession(session);
+        return "redirect:/login?registered";
+    }
+
+    @PostMapping("/register/resend-otp")
+    public String resendRegisterOtp(HttpSession session, RedirectAttributes redirectAttributes) {
+        PendingRegisterRequest pending = (PendingRegisterRequest) session.getAttribute(ATTR_REGISTER_PENDING);
+        if (pending == null) {
+            redirectAttributes.addFlashAttribute("error", "Phiên đăng ký không hợp lệ. Vui lòng đăng ký lại.");
+            return "redirect:/register";
+        }
+        String otp = String.format("%06d", new SecureRandom().nextInt(1_000_000));
+        session.setAttribute(ATTR_REGISTER_OTP, otp);
+        session.setAttribute(ATTR_REGISTER_OTP_EXPIRES, Instant.now().plusSeconds(300));
+        session.setAttribute(ATTR_REGISTER_OTP_ATTEMPTS, 0);
+        mailService.sendOtp(pending.getEmail(), otp);
+        redirectAttributes.addFlashAttribute("info", "Đã gửi lại mã OTP.");
+        return "redirect:/register/otp?resent";
+    }
+
+    private void prepareRegisterOtpSession(RegisterRequest req, Long guestId, HttpSession session) {
+        String otp = String.format("%06d", new SecureRandom().nextInt(1_000_000));
+        PendingRegisterRequest pending = PendingRegisterRequest.builder()
                 .username(req.getUsername())
-                .password(passwordEncoder.encode(req.getPassword()))
+                .password(req.getPassword())
                 .email(req.getEmail())
                 .phone(req.getPhone())
                 .address(req.getAddress())
-                .role(UserRole.CUSTOMER)
-                .status(UserStatus.ACTIVE)
                 .build();
+        session.setAttribute(ATTR_REGISTER_PENDING, pending);
+        session.setAttribute(ATTR_REGISTER_GUEST_ID, guestId);
+        session.setAttribute(ATTR_REGISTER_OTP, otp);
+        session.setAttribute(ATTR_REGISTER_OTP_EXPIRES, Instant.now().plusSeconds(300));
+        session.setAttribute(ATTR_REGISTER_OTP_ATTEMPTS, 0);
+    }
 
-        userRepository.save(user);
-        log.info("Created new CUSTOMER account: {}", req.getUsername());
-
-        return "redirect:/login?registered";
+    private void clearRegisterSession(HttpSession session) {
+        session.removeAttribute(ATTR_REGISTER_PENDING);
+        session.removeAttribute(ATTR_REGISTER_GUEST_ID);
+        session.removeAttribute(ATTR_REGISTER_OTP);
+        session.removeAttribute(ATTR_REGISTER_OTP_EXPIRES);
+        session.removeAttribute(ATTR_REGISTER_OTP_ATTEMPTS);
     }
 
     /**
@@ -161,5 +274,32 @@ public class AuthController {
         private String phone;
 
         private String address;
+    }
+
+    @Data
+    public static class OtpForm {
+        @NotBlank(message = "Vui lòng nhập mã OTP")
+        @Pattern(regexp = "^[0-9]{6}$", message = "OTP phải gồm đúng 6 chữ số")
+        private String otp;
+    }
+
+    @Data
+    @lombok.Builder
+    public static class PendingRegisterRequest {
+        private String username;
+        private String password;
+        private String email;
+        private String phone;
+        private String address;
+
+        public RegisterRequest toRegisterRequest() {
+            RegisterRequest req = new RegisterRequest();
+            req.setUsername(username);
+            req.setPassword(password);
+            req.setEmail(email);
+            req.setPhone(phone);
+            req.setAddress(address);
+            return req;
+        }
     }
 }

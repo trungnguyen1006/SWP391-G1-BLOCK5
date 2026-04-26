@@ -73,6 +73,10 @@ public class AdminUserController {
         if (userRepository.existsByEmail(form.getEmail())) {
             bindingResult.rejectValue("email", "email.exists", "Email đã tồn tại");
         }
+        if (form.getPhone() != null && !form.getPhone().isBlank()
+                && userRepository.existsByPhoneAndRoleNot(form.getPhone(), UserRole.GUEST)) {
+            bindingResult.rejectValue("phone", "phone.exists", "Số điện thoại đã tồn tại");
+        }
 
         if (bindingResult.hasErrors()) {
             User user = new User();
@@ -83,6 +87,7 @@ public class AdminUserController {
             user.setRole(form.getRole());
             model.addAttribute("user", user);
             model.addAttribute("isEdit", false);
+            model.addAttribute("validationErrors", bindingResult.getAllErrors());
             return "admin/users/form";
         }
 
@@ -152,6 +157,10 @@ public class AdminUserController {
         if (!user.getEmail().equals(form.getEmail()) && userRepository.existsByEmail(form.getEmail())) {
             bindingResult.rejectValue("email", "email.exists", "Email đã tồn tại");
         }
+        if (form.getPhone() != null && !form.getPhone().isBlank()
+                && userRepository.existsByPhoneAndIdNotAndRoleNot(form.getPhone(), id, UserRole.GUEST)) {
+            bindingResult.rejectValue("phone", "phone.exists", "Số điện thoại đã tồn tại");
+        }
 
         if (bindingResult.hasErrors()) {
             user.setUsername(form.getUsername());
@@ -161,6 +170,7 @@ public class AdminUserController {
             user.setRole(form.getRole());
             model.addAttribute("user", user);
             model.addAttribute("isEdit", true);
+            model.addAttribute("validationErrors", bindingResult.getAllErrors());
             return "admin/users/form";
         }
 

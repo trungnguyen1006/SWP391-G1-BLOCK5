@@ -144,6 +144,25 @@
             color: #666;
         }
 
+                        .alert {
+                            padding: 12px;
+                            margin-bottom: 16px;
+                            border-radius: 4px;
+                            font-size: 0.92rem;
+                        }
+
+                        .alert.info {
+                            background: #eff6ff;
+                            border: 1px solid #bfdbfe;
+                            color: #1d4ed8;
+                        }
+
+                        .alert.error {
+                            background: #fee2e2;
+                            border: 1px solid #fecaca;
+                            color: #b91c1c;
+                        }
+
         .form-note a {
             color: #f9c74f;
             text-decoration: none;
@@ -170,6 +189,8 @@
 
 <section class="auth-card">
     <h1>Đăng ký</h1>
+    <div class="alert info" th:if="${info}" th:text="${info}">Thong bao</div>
+    <div class="alert error" th:if="${error}" th:text="${error}">Loi</div>
     <form th:action="@{/register}" method="post" th:object="${registerRequest}" class="form">
         <label>Tên đăng nhập
             <input type="text" th:field="*{username}" placeholder="Nhập tên đăng nhập" required />
@@ -190,6 +211,7 @@
                    maxlength="10"
                    pattern="0[0-9]{9}"
                    title="Số điện thoại phải gồm 10 chữ số và bắt đầu bằng số 0" />
+            <small class="error" th:errors="*{phone}"></small>
         </label>
         <label>Địa chỉ (tùy chọn)
             <input type="text" th:field="*{address}" placeholder="Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành" />

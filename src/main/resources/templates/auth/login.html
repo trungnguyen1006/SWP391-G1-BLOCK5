@@ -179,9 +179,10 @@
 <section class="auth-card">
     <h1>Đăng nhập</h1>
     <div class="alert" th:if="${param.error}">
-        <span th:text="${param.error}">Sai thông tin đăng nhập</span>
+        <span th:text="${param.error[0]}">Sai thông tin đăng nhập</span>
     </div>
     <div class="alert success" th:if="${param.registered}">Đăng ký thành công, hãy đăng nhập</div>
+    <div class="alert success" th:if="${param.reset}">Đổi mật khẩu thành công, hãy đăng nhập lại</div>
     <form th:action="@{/login}" method="post" class="form">
         <label>Tên đăng nhập
             <input type="text" name="username" placeholder="Nhập tên đăng nhập" required />

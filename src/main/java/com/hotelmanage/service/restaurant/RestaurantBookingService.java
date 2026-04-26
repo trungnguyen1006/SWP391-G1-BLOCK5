@@ -27,6 +27,8 @@ import java.util.List;
 @Transactional
 public class RestaurantBookingService {
 
+    private static final int MAX_GUESTS_PER_SHIFT = 100;
+
     private final RestaurantBookingRepository bookingRepository;
     private final RestaurantRepository        restaurantRepository;
     private final UserRepository              userRepository;
@@ -51,7 +53,7 @@ public class RestaurantBookingService {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng!"));
 
-        Restaurant restaurant = getRestaurantAndValidate(restaurantId, bookingDate, shift);
+        Restaurant restaurant = getRestaurantAndValidate(restaurantId, bookingDate, shift, numberOfGuests);
 
         // Kiểm tra user đã đặt bàn cùng ca này chưa
         checkDuplicateBooking(user.getId(), restaurantId, bookingDate, shift);
@@ -102,7 +104,7 @@ public class RestaurantBookingService {
         // Validate số khách
         validateNumberOfGuests(numberOfGuests);
 
-        Restaurant restaurant = getRestaurantAndValidate(restaurantId, bookingDate, shift);
+        Restaurant restaurant = getRestaurantAndValidate(restaurantId, bookingDate, shift, numberOfGuests);
 
         User guestUser = findOrCreateGuestUser(guestEmail, guestPhone, guestName);
 
@@ -144,6 +146,13 @@ public class RestaurantBookingService {
         if (booking.getStatus() == RestaurantBookingStatus.CONFIRMED) {
             throw new RuntimeException("Booking đã được xác nhận trước đó!");
         }
+
+        assertConfirmedCapacity(
+                booking.getRestaurant().getId(),
+                booking.getBookingDate(),
+                booking.getBookingShift(),
+                booking.getNumberOfGuests()
+        );
 
         booking.setStatus(RestaurantBookingStatus.CONFIRMED);
         bookingRepository.save(booking);
@@ -250,7 +259,8 @@ public class RestaurantBookingService {
     // ─────────────────────────────────────────────────────────────────
     private Restaurant getRestaurantAndValidate(Long restaurantId,
                                                 LocalDate bookingDate,
-                                                BookingShift shift) {
+                                                BookingShift shift,
+                                                Integer numberOfGuests) {
         Restaurant restaurant = restaurantRepository.findById(restaurantId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy nhà hàng!"));
 
@@ -260,21 +270,28 @@ public class RestaurantBookingService {
                     "Nhà hàng không phục vụ " + shift.getDisplayName() + "!");
         }
 
-        // Kiểm tra còn bàn trống không
-        long activeCount = bookingRepository.countActiveBookings(
+        // Giới hạn tối đa 100 khách/nhà hàng/ca/ngày (chỉ tính CONFIRMED)
+        assertConfirmedCapacity(restaurantId, bookingDate, shift, numberOfGuests);
+
+        return restaurant;
+    }
+
+    private void assertConfirmedCapacity(Long restaurantId,
+                                         LocalDate bookingDate,
+                                         BookingShift shift,
+                                         Integer numberOfGuestsToAdd) {
+        long confirmedGuests = bookingRepository.sumActiveGuests(
                 restaurantId,
                 bookingDate,
                 shift,
-                List.of(RestaurantBookingStatus.PENDING, RestaurantBookingStatus.CONFIRMED)
+                List.of(RestaurantBookingStatus.CONFIRMED)
         );
 
-        if (activeCount >= restaurant.getMaxTables()) {
+        if (confirmedGuests + numberOfGuestsToAdd > MAX_GUESTS_PER_SHIFT) {
             throw new RuntimeException(
-                    shift.getDisplayName() + " ngày " + bookingDate
-                    + " đã đầy chỗ. Vui lòng chọn ca hoặc ngày khác!");
+                    "Tổng số khách ca " + shift.getDisplayName() + " ngày " + bookingDate
+                            + " vượt quá " + MAX_GUESTS_PER_SHIFT + " người. Vui lòng chọn ca hoặc ngày khác!");
         }
-
-        return restaurant;
     }
 
     /** Kiểm tra nhà hàng có mở ca được chọn không */
@@ -309,7 +326,7 @@ public class RestaurantBookingService {
                 .orElseGet(() -> {
                     User guest = User.builder()
                             .username("guest_" + email.split("@")[0]
-                                      + "_" + System.currentTimeMillis())
+                                    + "_" + System.currentTimeMillis())
                             .password("")
                             .email(email)
                             .phone(phone)
@@ -348,7 +365,7 @@ public class RestaurantBookingService {
         if (existing > 0) {
             throw new RuntimeException(
                     "Bạn đã có đặt bàn cho ca " + shift.getDisplayName()
-                    + " ngày " + bookingDate + " tại nhà hàng này rồi!");
+                            + " ngày " + bookingDate + " tại nhà hàng này rồi!");
         }
     }
 }

@@ -117,6 +117,10 @@
             <span th:text="${error}">Lỗi</span>
         </div>
 
+        <div th:if="${validationErrors}" class="alert-error" style="text-align:left;">
+            <div th:each="err : ${validationErrors}" th:text="${err.defaultMessage}">Lỗi validation</div>
+        </div>
+
         <form th:action="${isEdit ? '/admin/users/' + user.id : '/admin/users'}"
               method="post"
               enctype="multipart/form-data">
