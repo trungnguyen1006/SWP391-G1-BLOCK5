@@ -115,18 +115,18 @@
                 </tbody>
             </table>
 
-            <!-- PAGINATION -->
+            <!-- PHÂN TRANG -->
             <div class="d-flex justify-content-center align-items-center mt-3">
                 <nav>
                     <ul class="pagination mb-0">
 
-                        <!-- Previous Button -->
+                        <!-- Nút Trang trước -->
                         <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
                             <a class="page-link text-dark"
                                th:href="@{|/manager/rooms?page=${currentPage - 1}&size=5|}">«</a>
                         </li>
 
-                        <!-- Show first page if far away -->
+                        <!-- Hiển thị trang đầu nếu cách xa -->
                         <li class="page-item" th:if="${currentPage > 2}">
                             <a class="page-link text-dark" th:href="@{|/manager/rooms?page=0&size=5|}">1</a>
                         </li>
@@ -134,7 +134,7 @@
                             <span class="page-link text-dark">...</span>
                         </li>
 
-                        <!-- Show range around current page -->
+                        <!-- Hiển thị các trang xung quanh trang hiện tại -->
                         <li class="page-item"
                             th:each="i : ${#numbers.sequence((currentPage - 2 > 0 ? currentPage - 2 : 0),
                                                   (currentPage + 2 < totalPages - 1 ? currentPage + 2 : totalPages - 1))}"
@@ -144,7 +144,7 @@
                                th:text="${i + 1}"></a>
                         </li>
 
-                        <!-- Show last page if far away -->
+                        <!-- Hiển thị trang cuối nếu cách xa -->
                         <li class="page-item disabled" th:if="${currentPage < totalPages - 4}">
                             <span class="page-link text-dark">...</span>
                         </li>
@@ -154,7 +154,7 @@
                                th:text="${totalPages}"></a>
                         </li>
 
-                        <!-- Next Button -->
+                        <!-- Nút Trang tiếp theo -->
                         <li class="page-item" th:classappend="${currentPage + 1 >= totalPages} ? 'disabled'">
                             <a class="page-link text-dark"
                                th:href="@{|/manager/rooms?page=${currentPage + 1}&size=5|}">»</a>
@@ -162,7 +162,7 @@
                     </ul>
                 </nav>
 
-                <!-- Page Info X/Y -->
+                <!-- Thông tin trang X/Y -->
                 <span class="ms-3 text-muted" th:text="'Trang ' + (${currentPage + 1}) + '/' + ${totalPages}"></span>
             </div>
         </div>
