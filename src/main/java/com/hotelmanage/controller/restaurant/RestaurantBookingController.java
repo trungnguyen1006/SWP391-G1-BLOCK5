@@ -87,8 +87,18 @@ public class RestaurantBookingController {
                     redirectAttributes.addFlashAttribute("error", "Vui lòng nhập số điện thoại!");
                     return "redirect:/restaurants/" + id + "/booking";
                 }
+                // Validate định dạng số điện thoại (Việt Nam: 10 chữ số, bắt đầu với 0)
+                if (!guestPhone.trim().matches("^0\\d{9}$")) {
+                    redirectAttributes.addFlashAttribute("error", "Số điện thoại không hợp lệ (phải là 10 chữ số, bắt đầu với 0)!");
+                    return "redirect:/restaurants/" + id + "/booking";
+                }
                 if (guestEmail == null || guestEmail.isBlank()) {
                     redirectAttributes.addFlashAttribute("error", "Vui lòng nhập email!");
+                    return "redirect:/restaurants/" + id + "/booking";
+                }
+                // Validate định dạng email
+                if (!guestEmail.trim().matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
+                    redirectAttributes.addFlashAttribute("error", "Email không hợp lệ!");
                     return "redirect:/restaurants/" + id + "/booking";
                 }
 

@@ -308,6 +308,12 @@ public class RestaurantBookingService {
     // HELPER — Tạo / tìm GUEST user (tái sử dụng pattern BookingService)
     // ─────────────────────────────────────────────────────────────────
     private User findOrCreateGuestUser(String email, String phone, String name) {
+        // Kiểm tra số điện thoại đã tồn tại ở user khác (không phải GUEST) chưa
+        if (userRepository.existsByPhoneAndRoleNot(phone, UserRole.GUEST)) {
+            throw new RuntimeException(
+                    "Số điện thoại " + phone + " đã được sử dụng. Vui lòng nhập số khác hoặc đăng nhập!");
+        }
+
         return userRepository.findByEmail(email)
                 .map(existing -> {
                     // Email đã thuộc CUSTOMER/ADMIN/RECEPTIONIST → yêu cầu đăng nhập
@@ -317,7 +323,12 @@ public class RestaurantBookingService {
                         throw new RuntimeException(
                                 "Email này đã được đăng ký. Vui lòng đăng nhập để đặt bàn!");
                     }
-                    // GUEST cũ → cập nhật thông tin
+                    // GUEST cũ → cập nhật thông tin (phone cũng cần check duplicate)
+                    if (!existing.getPhone().equals(phone)
+                            && userRepository.existsByPhoneAndIdNotAndRoleNot(phone, existing.getId(), UserRole.GUEST)) {
+                        throw new RuntimeException(
+                                "Số điện thoại " + phone + " đã được sử dụng. Vui lòng nhập số khác!");
+                    }
                     existing.setPhone(phone);
                     existing.setAddress(name);
                     log.info("Updated existing guest user for restaurant booking: {}", email);
