@@ -98,7 +98,6 @@ public class ProfileController {
 
     @PostMapping("/profile/update")
     public String updateProfile(@RequestParam(value = "email", required = false) String email,
-                                @RequestParam(value = "phone", required = false) String phone,
                                 @RequestParam(value = "address", required = false) String address,
                                 @RequestParam(value = "avatar", required = false) MultipartFile avatarFile,
                                 RedirectAttributes redirectAttributes) {
@@ -119,22 +118,6 @@ public class ProfileController {
                 return "redirect:/profile";
             }
             user.setEmail(email);
-        }
-
-        // Validate và update phone
-        if (phone != null && !phone.isBlank()) {
-            if (!phone.matches("^(\\+84|0)[0-9]{9}$")) {
-                redirectAttributes.addFlashAttribute("updateError",
-                        "Số điện thoại không hợp lệ (VD: 0912345678)");
-                return "redirect:/profile";
-            }
-            if (userRepository.existsByPhoneAndIdNotAndRoleNot(phone, user.getId(), UserRole.GUEST)) {
-                redirectAttributes.addFlashAttribute("updateError", "Số điện thoại đã được sử dụng bởi tài khoản khác");
-                return "redirect:/profile";
-            }
-            user.setPhone(phone);
-        } else if (phone != null && phone.isBlank()) {
-            user.setPhone(null);
         }
 
         if (address != null && !address.isBlank()) {
