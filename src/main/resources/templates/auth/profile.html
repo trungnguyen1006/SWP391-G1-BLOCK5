@@ -245,7 +245,7 @@
             <div class="dropzone" id="dz" onclick="dzFile.click()" ondragover="dzDrag(event)" ondragleave="dzLeave(event)" ondrop="dzDrop(event)">
                 <input type="file" id="dzFile" name="avatar" accept="image/*" hidden onchange="dzPreview(this.files)" />
                 <div>Thả ảnh vào đây hoặc bấm để chọn</div>
-                <div class="hint">Hỗ trợ: JPG, PNG, WEBP. Tối đa ~5MB</div>
+                <div class="hint">Hỗ trợ: JPG, PNG, WEBP. Tối đa ~10MB</div>
                 <div class="preview" id="dzPreview">
                     <img th:src="${user != null and !#strings.isEmpty(user.avatarUrl)} ? ${user.avatarUrl} : @{'/images/avatar-placeholder.svg'}"
                          alt="preview"
